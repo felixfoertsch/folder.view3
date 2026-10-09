@@ -37,6 +37,23 @@
 .custom-action-wrapper { display: flex; flex-direction: column; }
 .multiselect-container { overflow: hidden; text-overflow: ellipsis; }
 
+.folder-live-preview { grid-column: 1 / -1; }
+.folder-editor fieldset { min-width: 0; margin: 0 0 1rem; padding: .75rem; border: 1px solid currentColor; }
+.folder-editor legend { padding: 0 .5rem; font-weight: bold; }
+.sample-row { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; border-block: 1px solid currentColor; padding: .75rem; }
+.sample-identity, .sample-item { display: flex; align-items: center; gap: .5rem; }
+.sample-identity img, .sample-item img { width: 32px; height: 32px; object-fit: contain; }
+.sample-items { display: flex; flex: 1; flex-wrap: wrap; gap: .75rem; padding: .5rem; }
+.sample-items[hidden], .sample-details[hidden], .sample-context[hidden] { display: none; }
+.sample-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sample-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sample-grayscale img { filter: grayscale(1); }
+.sample-bars .sample-item + .sample-item { border-left: 1px solid var(--sample-border); padding-left: .5rem; }
+.sample-hover { visibility: hidden; }
+.sample-row:hover .sample-hover, .sample-row:focus-within .sample-hover { visibility: visible; }
+.sample-context, .sample-details { padding: .75rem; border-bottom: 1px solid currentColor; }
+.sample-note:empty { display: none; }
+
 @media (max-width: 900px) {
 	.folder-editor { grid-template-columns: minmax(0, 1fr); }
 }

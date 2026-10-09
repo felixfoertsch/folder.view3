@@ -22,7 +22,14 @@ Markdown="false"
 
 <div class="canvas">
     <form class="folder-editor" onsubmit="submitForm(this); return false">
+        <section class="folder-live-preview" aria-label="Live folder preview">
+            <h2 data-i18n="live-preview">Live Preview</h2>
+            <p data-i18n="live-preview-help">Sample data only. Hover and focus the row to try preview settings.</p>
+            <div id="folder-live-preview"></div>
+        </section>
         <section class="folder-settings" aria-label="Folder settings">
+        <fieldset class="folder-basic-settings">
+        <legend data-i18n="basic-settings">Basic</legend>
         <div class="basic">
             <dl>
                 <dt data-i18n="name">Name:</dt>
@@ -57,6 +64,121 @@ Markdown="false"
                 </p>
             </blockquote>
         </div>
+        <div class="basic" constraint="docker">
+            <dl>
+                <dt data-i18n="update-column">Hide update column:</dt>
+                <dd>
+                    <input class="basic-switch" name="update_column" type="checkbox" style="display: none;" />
+                </dd>
+            </dl>
+            <blockquote class="inline_help">
+                <p data-i18n="[html]update-column-tooltip">
+                    Will <b>NUKE</b> the update column for this folder.
+                </p>
+            </blockquote>
+        </div>
+        <div class="basic">
+            <dl>
+                <dt data-i18n="override-default-actions">Override default actions:</dt>
+                <dd>
+                    <input class="basic-switch" name="override_default_actions" type="checkbox" style="display: none;" />
+                </dd>
+            </dl>
+            <blockquote class="inline_help">
+                <p data-i18n="[html]override-default-actions-tooltip">
+                    Will remove the default menu and replace it with the custom actions set below.
+                </p>
+            </blockquote>
+        </div>
+        <div class="basic">
+            <dl>
+                <dt data-i18n="default-action">Hide default action button:</dt>
+                <dd>
+                    <input class="basic-switch" name="default_action" type="checkbox" style="display: none;" />
+                </dd>
+            </dl>
+            <blockquote class="inline_help">
+                <p data-i18n="[html]default-action-tooltip">
+                    Will remove the default action button like start, stop and restart from the folder context menu.
+                </p>
+            </blockquote>
+        </div>
+        <div class="basic">
+            <dl>
+                <dt data-i18n="expand-tab">Expanded on Docker/VM tab:</dt>
+                <dd>
+                    <input class="basic-switch" name="expand_tab" type="checkbox" style="display: none;" />
+                </dd>
+            </dl>
+            <blockquote class="inline_help">
+                <p data-i18n="[html]expand-tab-tooltip">
+                    Will make the folder start expanded on the Docker/VMs tab.
+                </p>
+            </blockquote>
+        </div>
+        <div class="basic">
+            <dl>
+                <dt data-i18n="expand-dashboard">Expanded on Dashboard tab:</dt>
+                <dd>
+                    <input class="basic-switch" name="expand_dashboard" type="checkbox" style="display: none;" />
+                </dd>
+            </dl>
+            <blockquote class="inline_help">
+                <p data-i18n="[html]expand-dashboard-tooltip">
+                    Will make the folder start expanded on the Dashboard.
+                </p>
+            </blockquote>
+        </div>
+        <div class="basic">
+            <dl>
+                <dt data-i18n="regex">Regex:</dt>
+                <dd>
+                    <input type="text" name="regex" oninput="updateRegex(this)" value="">
+                </dd>
+            </dl>
+            <blockquote class="inline_help">
+                <p data-i18n="[html]regex-tooltip">
+                    Regex... <b>Lasciate ogne speranza, voi ch'intrate</b>
+                    <br>
+                    Any container name the regex matches will be added to folder.
+                    <br>
+                    Example for adding pterodactyl egg: <b>[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}</b>.
+                    <br>
+                    <a href="https://regex101.com/">Site for testing your regex</a>.
+                    <br>
+                    When you edit the regex anything selected manually will be deselected.
+                </p>
+            </blockquote>
+        </div>
+        <div class="basic custom-action-wrapper-parent">
+            <dl>
+                <dt data-i18n="custom-actions-folder">Custom actions:</dt>
+                <dd>
+                    <div class="custom-action-wrapper">​</div>
+                </dd>
+            </dl>
+            <blockquote class="inline_help">
+                <span data-i18n="[html]custom-actions-folder-tooltip">
+                    <b>Name:</b> Just the name of the action.<br><b>Type:</b> Type of the action.<br><ul><li><b>Standard</b> - normal action on docker containers (start, stop, ...).</li><li><b>Custom</b> - will execute a User Scripts (User Scripts plugin required).</li></ul><b>Action:</b> Action to be performed.<br><ul><li><b>Cycle</b> - cycle between two states.</li><li><b>Set</b> - set a state.</li><li><b>Restart</b> - basic restart.</li></ul><b>Conatiners:</b> A comma (,) separated list of conatiners.<br><b>Script:</b> Just the name of the script (<b>Names are case sensitive and need white spaces</b>).<br><b>Arguments:</b> Arguments passed to the script.<br><b>Sync:</b> Whether to run the script in background or not.<br><b>Icon:</b> Icon of the action, leave empty for default.
+                </span>
+            </blockquote>
+        </div>
+        <div class="basic">
+            <dl>
+                <dt>​</dt>
+                <dd>
+                    <a class="custom-action" data-i18n="[html]custom-action" onclick="customAction()"><i class="fa fa-plus" aria-hidden="true"></i> Add a custom action</a>
+                </dd>
+            </dl>
+            <blockquote class="inline_help">
+                <p data-i18n="[html]custom-action-tooltip">
+                    Lets you perform custom action on the folder.
+                </p>
+            </blockquote>
+        </div>
+        </fieldset>
+        <fieldset class="folder-preview-settings">
+        <legend data-i18n="preview-configuration">Preview Configuration</legend>
         <div class="basic">
             <dl>
                 <dt data-i18n="preview">Preview:</dt>
@@ -311,118 +433,7 @@ Markdown="false"
                 </p>
             </blockquote>
         </div>
-        <div class="basic" constraint="docker">
-            <dl>
-                <dt data-i18n="update-column">Hide update column:</dt>
-                <dd>
-                    <input class="basic-switch" name="update_column" type="checkbox" style="display: none;" />
-                </dd>
-            </dl>
-            <blockquote class="inline_help">
-                <p data-i18n="[html]update-column-tooltip">
-                    Will <b>NUKE</b> the update column for this folder.
-                </p>
-            </blockquote>
-        </div>
-        <div class="basic">
-            <dl>
-                <dt data-i18n="override-default-actions">Override default actions:</dt>
-                <dd>
-                    <input class="basic-switch" name="override_default_actions" type="checkbox" style="display: none;" />
-                </dd>
-            </dl>
-            <blockquote class="inline_help">
-                <p data-i18n="[html]override-default-actions-tooltip">
-                    Will remove the default menu and replace it with the custom actions set below.
-                </p>
-            </blockquote>
-        </div>
-        <div class="basic">
-            <dl>
-                <dt data-i18n="default-action">Hide default action button:</dt>
-                <dd>
-                    <input class="basic-switch" name="default_action" type="checkbox" style="display: none;" />
-                </dd>
-            </dl>
-            <blockquote class="inline_help">
-                <p data-i18n="[html]default-action-tooltip">
-                    Will remove the default action button like start, stop and restart from the folder context menu.
-                </p>
-            </blockquote>
-        </div>
-        <div class="basic">
-            <dl>
-                <dt data-i18n="expand-tab">Expanded on Docker/VM tab:</dt>
-                <dd>
-                    <input class="basic-switch" name="expand_tab" type="checkbox" style="display: none;" />
-                </dd>
-            </dl>
-            <blockquote class="inline_help">
-                <p data-i18n="[html]expand-tab-tooltip">
-                    Will make the folder start expanded on the Docker/VMs tab.
-                </p>
-            </blockquote>
-        </div>
-        <div class="basic">
-            <dl>
-                <dt data-i18n="expand-dashboard">Expanded on Dashboard tab:</dt>
-                <dd>
-                    <input class="basic-switch" name="expand_dashboard" type="checkbox" style="display: none;" />
-                </dd>
-            </dl>
-            <blockquote class="inline_help">
-                <p data-i18n="[html]expand-dashboard-tooltip">
-                    Will make the folder start expanded on the Dashboard.
-                </p>
-            </blockquote>
-        </div>
-        <div class="basic">
-            <dl>
-                <dt data-i18n="regex">Regex:</dt>
-                <dd>
-                    <input type="text" name="regex" oninput="updateRegex(this)" value="">
-                </dd>
-            </dl>
-            <blockquote class="inline_help">
-                <p data-i18n="[html]regex-tooltip">
-                    Regex... <b>Lasciate ogne speranza, voi ch'intrate</b>
-                    <br>
-                    Any container name the regex matches will be added to folder.
-                    <br>
-                    Example for adding pterodactyl egg: <b>[0-9a-zA-Z]{8}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{4}-[0-9a-zA-Z]{12}</b>.
-                    <br>
-                    <a href="https://regex101.com/">Site for testing your regex</a>.
-                    <br>
-                    When you edit the regex anything selected manually will be deselected.
-                </p>
-            </blockquote>
-        </div>
-        <div class="basic custom-action-wrapper-parent">
-            <dl>
-                <dt data-i18n="custom-actions-folder">Custom actions:</dt>
-                <dd>
-                    <div class="custom-action-wrapper">​</div>
-                </dd>
-            </dl>
-            <blockquote class="inline_help">
-                <span data-i18n="[html]custom-actions-folder-tooltip">
-                    <b>Name:</b> Just the name of the action.<br><b>Type:</b> Type of the action.<br><ul><li><b>Standard</b> - normal action on docker containers (start, stop, ...).</li><li><b>Custom</b> - will execute a User Scripts (User Scripts plugin required).</li></ul><b>Action:</b> Action to be performed.<br><ul><li><b>Cycle</b> - cycle between two states.</li><li><b>Set</b> - set a state.</li><li><b>Restart</b> - basic restart.</li></ul><b>Conatiners:</b> A comma (,) separated list of conatiners.<br><b>Script:</b> Just the name of the script (<b>Names are case sensitive and need white spaces</b>).<br><b>Arguments:</b> Arguments passed to the script.<br><b>Sync:</b> Whether to run the script in background or not.<br><b>Icon:</b> Icon of the action, leave empty for default.
-                </span>
-            </blockquote>
-        </div>
-        <div class="basic">
-            <dl>
-                <dt>​</dt>
-                <dd>
-                    <a class="custom-action" data-i18n="[html]custom-action" onclick="customAction()"><i class="fa fa-plus" aria-hidden="true"></i> Add a custom action</a>
-                </dd>
-            </dl>
-            <blockquote class="inline_help">
-                <p data-i18n="[html]custom-action-tooltip">
-                    Lets you perform custom action on the folder.
-                </p>
-            </blockquote>
-        </div>
+        </fieldset>
         </section>
         <section class="folder-assignment" aria-label="Order and folder assignment">
         <div class="basic">
@@ -464,6 +475,7 @@ Markdown="false"
     </form>
 </div>
 
+<script src="<?autov('/plugins/folder.view3/scripts/folderPreview.js')?>" defer></script>
 <script src="<?autov('/plugins/folder.view3/scripts/folder.js')?>" defer></script>
 
 <div class="dialogCustomAction" style="display:none"></div>

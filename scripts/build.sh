@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(values)) {
 	if ([...plugin.matchAll(pattern)].length !== 1) throw new Error(`Expected one ${key} entity`);
 	plugin = plugin.replace(pattern, `<!ENTITY ${key} "${value}">`);
 }
-plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Fix missing folders after update: preserve string responses expected by frontend JSON.parse calls.\n- Retain compact editor, action fixes, validated atomic storage and Tailscale caching.`);
+plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Split folder settings into Basic and Preview Configuration sections.\n- Add a live sample folder row that reflects settings before saving.\n- Sample preview controls never run real container or VM actions.`);
 fs.writeFileSync(output, plugin);
 NODE
 	printf 'Built %s\n' "$output"

@@ -119,6 +119,7 @@ $('div.canvas > form')[0].preview_border_color.value = rgbToHex($('body').css('c
     }
 
     updateList();
+    updateFolderPreview();
 })();
 
 /**
@@ -127,6 +128,7 @@ $('div.canvas > form')[0].preview_border_color.value = rgbToHex($('body').css('c
  */
 const updateIcon = (e) => {
     e.previousElementSibling.src = e.value;
+    updateFolderPreview();
 };
 
 /**
