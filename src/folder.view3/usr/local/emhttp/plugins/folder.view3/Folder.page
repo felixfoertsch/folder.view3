@@ -270,7 +270,7 @@ Markdown="false"
             <li constraint="preview-1 preview-2 preview-3 preview-4 docker">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="preview-webui">Add preview open WebUI:</dt>
+                        <dt data-i18n="preview-webui">Add WebUI icon:</dt>
                         <dd>
                             <input class="basic-switch" name="preview_webui" type="checkbox" style="display: none;" checked />
                         </dd>
@@ -285,7 +285,7 @@ Markdown="false"
             <li constraint="preview-1 preview-2 preview-3 preview-4">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="preview-logs">Add preview open logs:</dt>
+                        <dt data-i18n="preview-logs">Add Logs icon:</dt>
                         <dd>
                             <input class="basic-switch" name="preview_logs" type="checkbox" style="display: none;" checked />
                         </dd>
@@ -300,7 +300,7 @@ Markdown="false"
             <li constraint="preview-1 preview-2 preview-3 preview-4 docker">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="preview-console">Add preview open console:</dt>
+                        <dt data-i18n="preview-console">Add Console icon:</dt>
                         <dd>
                             <input class="basic-switch" name="preview_console" type="checkbox" style="display: none;" checked />
                         </dd>
@@ -316,6 +316,58 @@ Markdown="false"
                 </div>
             </li>
 
+        </ul>
+            </li>
+        </ul>
+
+        <div class="folder-borders" role="group" aria-labelledby="folder-borders-title">
+        <h3 id="folder-borders-title" data-i18n="preview-borders">Border and bars</h3>
+            <div constraint="preview-1 preview-2 preview-3 preview-4">
+                <div class="basic">
+                    <dl>
+                        <dt data-i18n="preview-vertical-bars">Preview vertical bars:</dt>
+                        <dd>
+                            <input class="basic-switch" name="preview_vertical_bars" type="checkbox" style="display: none;" onchange="updateForm()" />
+                        </dd>
+                    </dl>
+                    <blockquote class="inline_help">
+                        <p data-i18n="[html]preview-vertical-bars-tooltip">
+                            Will Show vertical bars between container/VM inside the folder preview.
+                        </p>
+                    </blockquote>
+                </div>
+            </div>
+        <div class="basic">
+            <dl>
+                <dt data-i18n="border">Show preview border:</dt>
+                <dd>
+                    <input class="basic-switch" checked name="preview_border" type="checkbox" style="display: none;" onchange="updateForm()" />
+                </dd>
+            </dl>
+            <blockquote class="inline_help">
+                <p data-i18n="[html]border-tooltip">
+                    Will Show a border on the preview box.
+                </p>
+            </blockquote>
+        </div>
+        <div class="basic" constraint="color">
+            <dl>
+                <dt data-i18n="border-color">Preview border and vertical bars color:</dt>
+                <dd class="folder-color-controls">
+                    <input type="color" name="preview_border_color">
+                    <button type="button" data-i18n="reset-to-default" onclick="this.form.preview_border_color.value = rgbToHex($('body').css('color')); this.form.preview_border_color.dispatchEvent(new Event('input', { bubbles: true }));">Reset to default</button>
+                </dd>
+            </dl>
+            <blockquote class="inline_help">
+                <p data-i18n="[html]border-color-tooltip">
+                    Will make the preview border and vertical bars a specific color.
+                    <br>
+                    Reset to default sets the color to the current theme's font color.
+                </p>
+            </blockquote>
+        </div>
+        </div>
+        <ul class="folder-popup-settings">
             <li constraint="docker preview-1 preview-2 preview-3 preview-4">
                 <div class="basic">
                     <dl>
@@ -394,56 +446,6 @@ Markdown="false"
                         </div>
                     </li>
                 </ul>
-            </li>
-        </ul>
-        
-        <div class="folder-borders" role="group" aria-labelledby="folder-borders-title">
-        <h3 id="folder-borders-title" data-i18n="preview-borders">Border and bars</h3>
-            <div constraint="preview-1 preview-2 preview-3 preview-4">
-                <div class="basic">
-                    <dl>
-                        <dt data-i18n="preview-vertical-bars">Preview vertical bars:</dt>
-                        <dd>
-                            <input class="basic-switch" name="preview_vertical_bars" type="checkbox" style="display: none;" onchange="updateForm()" />
-                        </dd>
-                    </dl>
-                    <blockquote class="inline_help">
-                        <p data-i18n="[html]preview-vertical-bars-tooltip">
-                            Will Show vertical bars between container/VM inside the folder preview.
-                        </p>
-                    </blockquote>
-                </div>
-            </div>
-        <div class="basic">
-            <dl>
-                <dt data-i18n="border">Show preview border:</dt>
-                <dd>
-                    <input class="basic-switch" checked name="preview_border" type="checkbox" style="display: none;" onchange="updateForm()" />
-                </dd>
-            </dl>
-            <blockquote class="inline_help">
-                <p data-i18n="[html]border-tooltip">
-                    Will Show a border on the preview box.
-                </p>
-            </blockquote>
-        </div>
-        <div class="basic" constraint="color">
-            <dl>
-                <dt data-i18n="border-color">Preview border and vertical bars color:</dt>
-                <dd class="folder-color-controls">
-                    <input type="color" name="preview_border_color">
-                    <button type="button" data-i18n="reset-to-default" onclick="this.form.preview_border_color.value = rgbToHex($('body').css('color')); this.form.preview_border_color.dispatchEvent(new Event('input', { bubbles: true }));">Reset to default</button>
-                </dd>
-            </dl>
-            <blockquote class="inline_help">
-                <p data-i18n="[html]border-color-tooltip">
-                    Will make the preview border and vertical bars a specific color.
-                    <br>
-                    Reset to default sets the color to the current theme's font color.
-                </p>
-            </blockquote>
-        </div>
-        </div>
         </fieldset>
         </section>
         <section class="folder-assignment" aria-label="Order and folder assignment">

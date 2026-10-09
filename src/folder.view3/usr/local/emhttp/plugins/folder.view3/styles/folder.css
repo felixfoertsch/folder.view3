@@ -21,11 +21,13 @@
 .folder-editor input[type="text"], .folder-editor select { max-width: 100%; box-sizing: border-box; }
 .folder-editor ul { padding-left: 1rem; }
 .folder-editor .inline_help { margin: .5rem 0; }
-.folder-shortcuts { list-style: none; border-block: 1px solid currentColor; padding-block: .5rem; margin-block: .75rem; }
+.folder-shortcuts { list-style: none; padding-block: .5rem; margin-block: .75rem; }
 .folder-shortcuts h3, .folder-borders h3 { margin: 0 0 .5rem; }
-.folder-borders { border-top: 1px solid currentColor; padding-top: .5rem; margin-top: .75rem; }
-.folder-editor .folder-color-controls { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
-.folder-color-controls button { margin: 0; min-width: 0; }
+.folder-borders { padding-top: .5rem; margin-top: .75rem; }
+.folder-editor .folder-color-controls { display: flex; align-items: center; flex-wrap: nowrap; gap: .5rem; }
+.folder-color-controls input[type="color"] { width: 3rem; flex: 0 0 3rem; margin: 0; }
+.folder-color-controls button { margin: 0; min-width: 0; white-space: nowrap; }
+.folder-editor .folder-popup-settings { margin-top: 1rem; list-style: none; }
 .folder-editor .folder-shortcuts > div > ul { padding: 0; list-style: none; }
 .folder-editor .folder-order-table dl { display: block; }
 .folder-editor table.sortable { width: 100%; table-layout: fixed; }
