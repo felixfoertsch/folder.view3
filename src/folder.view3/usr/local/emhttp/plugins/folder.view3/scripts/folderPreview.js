@@ -14,6 +14,7 @@ const folderPreviewSafeClone = source => {
 	return clone;
 };
 const updateFolderPreview = () => {
+	for (const popup of document.querySelectorAll('.folder-demo-popup')) popup.remove();
 	const form = document.querySelector('form.folder-editor');
 	const target = document.getElementById('folder-live-preview');
 	const type = new URLSearchParams(location.search).get('type');
@@ -60,7 +61,11 @@ const updateFolderPreview = () => {
 			const title = outer.querySelector(docker ? '.appname' : '.inner > a');
 			if (title) inner.append(folderPreviewSafeClone(title));
 			const last = [...preview.querySelectorAll('.folder-preview-wrapper > span.outer')].at(-1);
-			if (last && last.children.length < 2) { last.append(inner); continue; }
+			if (last && last.children.length < 2) {
+				last.append(inner);
+				if (docker) attachFolderPreviewContext(inner, name, metadata.get(name), settings);
+				continue;
+			}
 			group.append(inner);
 			item = group;
 		}
@@ -86,6 +91,7 @@ const updateFolderPreview = () => {
 		wrapper.className = 'folder-preview-wrapper';
 		wrapper.append(item);
 		preview.append(wrapper);
+		if (docker) attachFolderPreviewContext(item, name, metadata.get(name), settings);
 		if (settings.preview_vertical_bars) {
 			const divider = document.createElement('div');
 			divider.className = 'folder-preview-divider';

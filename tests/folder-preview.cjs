@@ -35,4 +35,15 @@ const page = fs.readFileSync(root + 'Folder.page', 'utf8');
 assert.equal((page.match(/<fieldset/g) || []).length, 2);
 assert.ok(page.includes('include/folderRow.js'));
 assert.ok(fs.readFileSync(root + 'styles/folder.css', 'utf8').includes('position: sticky'));
-console.log('Assignment order, shared row markup, escaping and read-only preview checks passed');
+vm.runInContext(fs.readFileSync(root + 'scripts/include/previewContext.js', 'utf8') + '\nglobalThis.popup = folderPreviewContextHtml;', context);
+for (const mode of [1, 2]) {
+	const html = context.popup('<unsafe>', { State: { Running: true, WebUi: 'https://example.test' } }, { context: mode, context_graph: 2, context_graph_time: 60 });
+	assert.ok(html.includes('disabled'));
+	assert.ok(!html.includes('onclick') && !html.includes('href='));
+	if (mode === 2) {
+		assert.ok(html.includes('&lt;unsafe&gt;'));
+		assert.ok(html.includes('CPU') && html.includes('Memory'));
+		assert.ok(html.includes('not live measurements'));
+	}
+}
+console.log('Assignment order, shared markup, escaping, read-only popup checks passed');

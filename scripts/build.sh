@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(values)) {
 	if ([...plugin.matchAll(pattern)].length !== 1) throw new Error(`Expected one ${key} entity`);
 	plugin = plugin.replace(pattern, `<!ENTITY ${key} "${value}">`);
 }
-plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Pin editor preview below the Folder banner while scrolling.\n- Show current assignments in order using native Unraid rows and shared Docker/VM folder markup.\n- Keep preview controls read-only; never execute native row scripts or container actions.`);
+plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Demonstrate Default and Advanced context popups in the floating editor preview.\n- Reflect activation mode, graph mode and timeframe; graphs are illustrative.\n- Keep popup actions disabled and escape container details.`);
 fs.writeFileSync(output, plugin);
 NODE
 	printf 'Built %s\n' "$output"

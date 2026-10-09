@@ -31,7 +31,8 @@ $('div.canvas > form')[0].preview_border_color.value = rgbToHex($('body').css('c
                 'Name': e.info.Name,
                 'Icon': e.info.Config.Labels['net.unraid.docker.icon'],
                 'Label': e.info.Config.Labels['folder.view3'] ?? e.info.Config.Labels['folder.view2'],
-                'State': e.info.State
+                'State': e.info.State,
+                'Info': e
             }
         };
     } else if (type === 'vm') {

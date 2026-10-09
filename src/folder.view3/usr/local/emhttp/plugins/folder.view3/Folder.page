@@ -478,6 +478,7 @@ Markdown="false"
     </form>
 </div>
 
+<script src="<?autov('/plugins/folder.view3/scripts/include/previewContext.js')?>" defer></script>
 <script src="<?autov('/plugins/folder.view3/scripts/folderPreview.js')?>" defer></script>
 <script src="<?autov('/plugins/folder.view3/scripts/folder.js')?>" defer></script>
 

@@ -48,6 +48,16 @@
 .folder-editor fieldset { min-width: 0; margin: 0 0 1rem; padding: .75rem; border: 1px solid currentColor; }
 .folder-editor legend { padding: 0 .5rem; font-weight: bold; }
 
+.folder-demo-popup { margin: 0; padding: .5rem; border: 1px solid currentColor; border-radius: 5px; box-shadow: 0 4px 16px #0004; max-width: calc(100vw - 16px); max-height: calc(100vh - 16px); overflow: auto; }
+.folder-demo-popup .preview-outbox { width: 700px; min-width: 0; max-width: 100%; height: auto; min-height: 0; max-height: none; }
+.folder-demo-popup .folder-demo-menu { list-style: none; margin: 0; padding: 0; }
+.folder-demo-menu button { display: block; width: 100%; text-align: left; margin: 0; }
+.folder-demo-close { float: right; min-width: 0; }
+.folder-demo-graphs { display: flex; flex-wrap: wrap; }
+.folder-demo-graphs figure { margin: .5rem 0; width: 100%; }
+.folder-demo-graphs svg { width: 100%; height: 100px; }
+.folder-demo-warning { font-size: .85rem; }
+
 @media (max-width: 900px) {
 	.folder-editor { grid-template-columns: minmax(0, 1fr); }
 }
