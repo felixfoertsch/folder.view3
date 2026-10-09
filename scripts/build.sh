@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(values)) {
 	if ([...plugin.matchAll(pattern)].length !== 1) throw new Error(`Expected one ${key} entity`);
 	plugin = plugin.replace(pattern, `<!ENTITY ${key} "${value}">`);
 }
-plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Split folder settings into Basic and Preview Configuration sections.\n- Add a live sample folder row that reflects settings before saving.\n- Sample preview controls never run real container or VM actions.`);
+plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Pin editor preview below the Folder banner while scrolling.\n- Show current assignments in order using native Unraid rows and shared Docker/VM folder markup.\n- Keep preview controls read-only; never execute native row scripts or container actions.`);
 fs.writeFileSync(output, plugin);
 NODE
 	printf 'Built %s\n' "$output"

@@ -12,9 +12,12 @@ Markdown="false"
 </script>
 <? require_once('/usr/local/emhttp/plugins/folder.view3/langs/script.php') ?>
 <script src="<?autov('/plugins/folder.view3/scripts/include/escapeHtml.js')?>"></script>
+<script src="<?autov('/plugins/folder.view3/scripts/include/folderRow.js')?>"></script>
 <script src="<?autov('/webGui/javascript/jquery.switchbutton.js')?>"></script>
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.switchbutton.css')?>">
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.ui.css')?>">
+<link type="text/css" rel="stylesheet" href="<?autov('/plugins/dynamix.docker.manager/sheets/DockerContainers.css')?>">
+<link type="text/css" rel="stylesheet" href="<?autov('/plugins/folder.view3/styles/'.(($_GET['type'] ?? '') === 'docker' ? 'docker' : 'vm').'.css')?>">
 <link type="text/css" rel="stylesheet" href="<?autov('/plugins/folder.view3/styles/folder.css')?>">
 <link type="text/css" rel="stylesheet" href="<?autov("/plugins/dynamix.docker.manager/styles/style-{$display['theme']}.css")?>">
 <link type="text/css" rel="stylesheet" href="<?autov("/plugins/folder.view3/styles/include/jquery.multiselect.css")?>">
@@ -24,7 +27,7 @@ Markdown="false"
     <form class="folder-editor" onsubmit="submitForm(this); return false">
         <section class="folder-live-preview" aria-label="Live folder preview">
             <h2 data-i18n="live-preview">Live Preview</h2>
-            <p data-i18n="live-preview-help">Sample data only. Hover and focus the row to try preview settings.</p>
+            <p data-i18n="live-preview-help">Current assignments and settings. Preview controls are read-only.</p>
             <div id="folder-live-preview"></div>
         </section>
         <section class="folder-settings" aria-label="Folder settings">

@@ -1,49 +1,145 @@
-// Isolated sample row: never dispatch Docker/VM actions.
+// Read native rows once; never execute their scripts or container/VM actions.
+let folderPreviewRows = new Map();
+const folderPreviewNames = form => [...form.querySelectorAll('.sortable input[name="containers[]"]')]
+	.filter(input => input.checked || input.disabled).map(input => input.value);
+const folderPreviewSafeClone = source => {
+	const clone = source.cloneNode(true);
+	for (const el of [clone, ...clone.querySelectorAll('*')]) {
+		for (const attr of [...el.attributes]) {
+			if (/^on/i.test(attr.name) || ['id', 'href', 'action', 'formaction', 'name'].includes(attr.name)) el.removeAttribute(attr.name);
+		}
+		if (el.matches('input,button,select,textarea')) el.disabled = true;
+	}
+	for (const el of clone.querySelectorAll('script,iframe,object,embed')) el.remove();
+	return clone;
+};
 const updateFolderPreview = () => {
 	const form = document.querySelector('form.folder-editor');
 	const target = document.getElementById('folder-live-preview');
-	const field = name => form.elements.namedItem(name);
-	const checked = name => field(name).checked;
-	const value = name => field(name).value;
-	const mode = Number(value('preview'));
-	const docker = new URLSearchParams(location.search).get('type') === 'docker';
-	const label = key => folderHtml($.i18n(key));
-	const icon = folderHtml(value('icon') || '/plugins/dynamix.docker.manager/images/question.png');
-	const name = folderHtml(value('name') || $.i18n('sample-folder'));
-	const sampleIcon = '/plugins/dynamix.docker.manager/images/question.png';
-	const samples = ['Sample A', 'Sample B', 'Sample C'];
-	const items = samples.map(sample => `<span class="sample-item">${mode !== 3 ? `<img src="${sampleIcon}" alt="">` : ''}${mode !== 2 ? `<span class="sample-label">${sample}</span>` : ''}${docker && mode !== 0 ? `<small>${checked('preview_webui') ? '↗ ' : ''}${checked('preview_logs') ? '≡ ' : ''}${checked('preview_console') ? '>_ ' : ''}</small>` : ''}${docker && checked('preview_update') ? '<small>✓</small>' : ''}</span>`).join('');
-	target.innerHTML = `<div class="sample-row" tabindex="0"><div class="sample-identity"><img src="${icon}" alt=""><div><strong>${name}</strong><br><span>${label('started')}</span></div><span>${checked('expand_tab') ? '▾' : '▸'}</span></div>${docker && !checked('update_column') ? `<div class="sample-update">✓ ${label('up-to-date')}</div>` : ''}<div class="sample-items" ${mode === 0 ? 'hidden' : ''}>${items}</div><div class="sample-load">2.00%<br>128 MiB / 8 GiB</div></div><div class="sample-context" hidden></div><div class="sample-details" ${checked('expand_tab') ? '' : 'hidden'}>${samples.join(' · ')}</div><p class="sample-note"></p>`;
-	const row = target.querySelector('.sample-row');
-	const preview = target.querySelector('.sample-items');
-	preview.classList.toggle('sample-hover', checked('preview_hover'));
-	preview.classList.toggle('sample-list', mode === 4);
-	preview.classList.toggle('sample-grayscale', checked('preview_grayscale'));
-	preview.classList.toggle('sample-bars', checked('preview_vertical_bars'));
-	preview.style.border = checked('preview_border') ? `1px solid ${value('preview_border_color')}` : 'none';
-	preview.style.setProperty('--sample-border', value('preview_border_color'));
-	const width = value('preview_text_width');
-	if (/^[0-9]+(?:\.[0-9]+)?(?:px|em|rem|%|vw)?$/.test(width)) {
-		for (const el of preview.querySelectorAll('.sample-label')) el.style.maxWidth = /^\d+(?:\.\d+)?$/.test(width) ? `${width}px` : width;
+	const type = new URLSearchParams(location.search).get('type');
+	const docker = type === 'docker';
+	const settings = Object.fromEntries([...form.elements].filter(el => el.name && !el.name.includes('[')).map(el => [el.name, el.type === 'checkbox' ? el.checked : el.value]));
+	const mode = Number(settings.preview);
+	const names = folderPreviewNames(form);
+	const advanced = $.cookie(docker ? 'docker_listview_mode' : 'vm_listview_mode') === 'advanced';
+	const folder = { name: settings.name || $.i18n('sample-folder'), icon: settings.icon || '/plugins/dynamix.docker.manager/images/question.png', settings };
+	target.innerHTML = `<table class="${docker ? 'docker_containers' : 'vmachines'}"><tbody>${folderRowHtml(type, folder, 'editorpreview', advanced)}</tbody></table>`;
+	const nativeRow = target.querySelector('tr');
+	const row = folderPreviewSafeClone(nativeRow);
+	nativeRow.replaceWith(row);
+	row.tabIndex = 0;
+	row.classList.remove('sortable');
+	const preview = row.querySelector('.folder-preview');
+	preview.classList.add(`folder-preview-${mode}`);
+	if (settings.preview_border) preview.style.border = `1px solid ${settings.preview_border_color}`;
+	let started = 0;
+	let upToDate = true;
+	const metadata = new Map([...choose, ...selected, ...selectedRegex].map(item => [item.Name, item]));
+	for (const name of names) {
+		const source = folderPreviewRows.get(name);
+		if (!source) continue;
+		const stateInfo = metadata.get(name)?.State;
+		if (stateInfo?.Updated === false) upToDate = false;
+		const native = folderPreviewSafeClone(source);
+		if (native.querySelector('.started, .running')) started++;
+		if (settings.expand_tab) {
+			native.classList.add('folder-element');
+			row.parentElement.append(native);
+		}
+		if (!mode) continue;
+		const outer = source.querySelector(`td.${docker ? 'ct-name' : 'vm-name'} > span.outer`);
+		if (!outer) continue;
+		const identity = mode === 2 ? outer.querySelector('.hand') : mode === 3 ? outer.querySelector('.inner') : outer;
+		if (!identity) continue;
+		let item = folderPreviewSafeClone(identity);
+		if (mode === 4) {
+			const group = document.createElement('span');
+			group.className = 'outer';
+			const inner = document.createElement('span');
+			inner.className = 'inner';
+			const title = outer.querySelector(docker ? '.appname' : '.inner > a');
+			if (title) inner.append(folderPreviewSafeClone(title));
+			const last = [...preview.querySelectorAll('.folder-preview-wrapper > span.outer')].at(-1);
+			if (last && last.children.length < 2) { last.append(inner); continue; }
+			group.append(inner);
+			item = group;
+		}
+		if (docker) {
+			const state = item.querySelector('.state');
+			if (state) state.innerHTML = state.innerHTML.split('<br>')[0];
+			if (settings.preview_update && stateInfo?.Updated === false) {
+				for (const el of item.querySelectorAll('.appname, a.exec')) el.classList.add('orange-text');
+			}
+			const title = item.querySelector(':scope > .inner:last-child') || item;
+			for (const [setting, icon] of [['preview_webui', 'external-link'], ['preview_console', 'terminal'], ['preview_logs', 'bars']]) {
+				if (settings[setting] && (setting !== 'preview_webui' || stateInfo?.WebUi)) {
+					const shortcut = document.createElement('span');
+					shortcut.className = 'folder-element-custom-btn';
+					shortcut.innerHTML = `<a><i class="fa fa-${icon}" aria-hidden="true"></i></a>`;
+					title.append(shortcut);
+				}
+			}
+		}
+		for (const img of item.querySelectorAll('img')) if (settings.preview_grayscale) img.style.filter = 'grayscale(1)';
+		for (const title of item.querySelectorAll(docker ? '.inner > .appname' : '.inner > a')) title.style.width = settings.preview_text_width;
+		const wrapper = document.createElement('div');
+		wrapper.className = 'folder-preview-wrapper';
+		wrapper.append(item);
+		preview.append(wrapper);
+		if (settings.preview_vertical_bars) {
+			const divider = document.createElement('div');
+			divider.className = 'folder-preview-divider';
+			divider.style.borderColor = settings.preview_border_color;
+			preview.append(divider);
+		}
 	}
-	for (const img of target.querySelectorAll('img')) img.onerror = () => { img.onerror = null; img.src = sampleIcon; };
-	const context = target.querySelector('.sample-context');
-	if (docker && mode !== 0 && value('context') !== '0') {
-		context.textContent = value('context') === '2' ? `Sample A · CPU 2.00% · 128 MiB · ${field('context_graph').selectedOptions[0].text} · ${value('context_graph_time')} s` : 'Sample A · 2.00% · 128 MiB';
-		const show = () => { context.hidden = false; };
-		if (value('context_trigger') === '1') row.addEventListener('mouseenter', show);
-		else row.addEventListener('click', show);
-		row.addEventListener('focus', show);
-		row.addEventListener('mouseleave', () => { context.hidden = true; });
-		row.addEventListener('blur', () => { context.hidden = true; });
+	row.querySelector('.folder-state').textContent = `${started}/${names.length} ${$.i18n('started')}`;
+	const status = row.querySelector('.folder-load-status');
+	if (started) { status.classList.remove('stopped', 'red-text'); status.classList.add('started', 'green-text'); }
+	if (docker && !upToDate) {
+		const update = row.querySelector('.folder-update-text');
+		update.classList.replace('green-text', 'orange-text');
+		update.textContent = $.i18n('update-ready');
 	}
-	target.querySelector('.sample-note').textContent = [
-		checked('expand_dashboard') ? $.i18n('expand-dashboard') : '',
-		checked('override_default_actions') ? $.i18n('override-default-actions') : '',
-		checked('default_action') ? $.i18n('default-action') : '',
-	].filter(Boolean).join(' · ');
+	if (docker && settings.update_column) row.querySelector('.updatecolumn').remove();
+	if (docker && !advanced) for (const el of row.querySelectorAll('.advanced')) el.style.display = 'none';
+	for (const el of target.querySelectorAll('.folder-preview img')) el.addEventListener('error', () => { el.src = '/plugins/dynamix.docker.manager/images/question.png'; }, { once: true });
+	const auto = row.querySelector('.autostart');
+	$(auto).switchButton({ labels_placement: 'right', off_label: $.i18n('off'), on_label: $.i18n('on'), checked: false });
+	$(auto).parent().css('pointer-events', 'none');
 };
 
-document.querySelector('form.folder-editor').addEventListener('input', updateFolderPreview);
-document.querySelector('form.folder-editor').addEventListener('change', updateFolderPreview);
-updateFolderPreview();
+const loadFolderPreviewRows = async () => {
+	const type = new URLSearchParams(location.search).get('type');
+	const path = type === 'docker' ? '/plugins/dynamix.docker.manager/include/DockerContainers.php' : '/plugins/dynamix.vm.manager/include/VMMachines.php';
+	try {
+		const response = await fetch(path);
+		if (!response.ok) throw new Error(`HTTP ${response.status}`);
+		const html = (await response.text()).split('\0')[0];
+		const parsed = new DOMParser().parseFromString(`<table><tbody>${html}</tbody></table>`, 'text/html');
+		for (const row of parsed.querySelectorAll('tr')) {
+			const name = row.querySelector(type === 'docker' ? '.ct-name .appname' : '.vm-name .inner > a')?.textContent.trim();
+			if (name) folderPreviewRows.set(name, row);
+		}
+		updateFolderPreview();
+	} catch (error) {
+		document.getElementById('folder-live-preview').textContent = 'Preview could not be loaded. Reload this page to retry.';
+	}
+};
+const previewPanel = document.querySelector('.folder-live-preview');
+const previewBanner = document.querySelector('div.title');
+const positionFolderPreview = () => {
+	const style = getComputedStyle(previewBanner || document.body);
+	previewPanel.style.setProperty('--folder-preview-background', style.backgroundColor === 'rgba(0, 0, 0, 0)' ? getComputedStyle(document.body).backgroundColor : style.backgroundColor);
+	previewPanel.style.setProperty('--folder-preview-top', `${previewBanner?.offsetHeight || 0}px`);
+};
+if (previewBanner) new ResizeObserver(positionFolderPreview).observe(previewBanner);
+positionFolderPreview();
+const previewForm = document.querySelector('form.folder-editor');
+previewForm.addEventListener('input', updateFolderPreview);
+previewForm.addEventListener('change', updateFolderPreview);
+// jQuery switchButton emits synthetic changes, not native DOM events.
+$(previewForm).on('change.folderPreview', 'input,select', event => {
+	if (!event.target.closest('.folder-live-preview')) updateFolderPreview();
+});
+loadFolderPreviewRows();

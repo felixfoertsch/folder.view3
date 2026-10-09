@@ -162,6 +162,6 @@
     "basic-settings": "Basic",
     "preview-configuration": "Preview Configuration",
     "live-preview": "Live Preview",
-    "live-preview-help": "Sample data only. Hover and focus the row to try preview settings.",
+    "live-preview-help": "Current assignments and settings. Preview controls are read-only.",
     "sample-folder": "Sample folder"
 }

@@ -37,22 +37,16 @@
 .custom-action-wrapper { display: flex; flex-direction: column; }
 .multiselect-container { overflow: hidden; text-overflow: ellipsis; }
 
-.folder-live-preview { grid-column: 1 / -1; }
+.content:has(.folder-live-preview) { overflow: visible; }
+.content:has(.folder-live-preview) > .title { position: sticky; top: 0; z-index: 11; }
+.folder-live-preview { grid-column: 1 / -1; align-self: start; position: sticky; top: var(--folder-preview-top, 0px); z-index: 10; background: var(--folder-preview-background); box-shadow: 0 2px 4px #0003; }
+.folder-live-preview h2 { margin: .25rem 0; }
+.folder-live-preview p { margin: .25rem 0; }
+.folder-live-preview table { width: 100%; }
+.folder-live-preview .hover:not(:hover):not(:focus-within) .folder-preview-wrapper { visibility: hidden; }
+.folder-live-preview :focus-within .folder-preview-wrapper { visibility: visible; }
 .folder-editor fieldset { min-width: 0; margin: 0 0 1rem; padding: .75rem; border: 1px solid currentColor; }
 .folder-editor legend { padding: 0 .5rem; font-weight: bold; }
-.sample-row { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; border-block: 1px solid currentColor; padding: .75rem; }
-.sample-identity, .sample-item { display: flex; align-items: center; gap: .5rem; }
-.sample-identity img, .sample-item img { width: 32px; height: 32px; object-fit: contain; }
-.sample-items { display: flex; flex: 1; flex-wrap: wrap; gap: .75rem; padding: .5rem; }
-.sample-items[hidden], .sample-details[hidden], .sample-context[hidden] { display: none; }
-.sample-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sample-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.sample-grayscale img { filter: grayscale(1); }
-.sample-bars .sample-item + .sample-item { border-left: 1px solid var(--sample-border); padding-left: .5rem; }
-.sample-hover { visibility: hidden; }
-.sample-row:hover .sample-hover, .sample-row:focus-within .sample-hover { visibility: visible; }
-.sample-context, .sample-details { padding: .75rem; border-bottom: 1px solid currentColor; }
-.sample-note:empty { display: none; }
 
 @media (max-width: 900px) {
 	.folder-editor { grid-template-columns: minmax(0, 1fr); }

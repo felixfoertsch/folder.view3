@@ -19,6 +19,7 @@ require_once('/usr/local/emhttp/plugins/folder.view3/langs/script.php');
     });
 </script>
 <script src="<?autov('/plugins/folder.view3/scripts/include/escapeHtml.js')?>"></script>
+<script src="<?autov('/plugins/folder.view3/scripts/include/folderRow.js')?>"></script>
 <script src="/plugins/folder.view3/scripts/include/customEvents.js"></script>
 <?php require_once('/usr/local/emhttp/plugins/folder.view3/scripts/custom.php') ?>
 

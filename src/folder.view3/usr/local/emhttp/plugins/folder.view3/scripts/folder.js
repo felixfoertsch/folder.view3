@@ -30,7 +30,8 @@ $('div.canvas > form')[0].preview_border_color.value = rgbToHex($('body').css('c
             return {
                 'Name': e.info.Name,
                 'Icon': e.info.Config.Labels['net.unraid.docker.icon'],
-                'Label': e.info.Config.Labels['folder.view3'] ?? e.info.Config.Labels['folder.view2']
+                'Label': e.info.Config.Labels['folder.view3'] ?? e.info.Config.Labels['folder.view2'],
+                'State': e.info.State
             }
         };
     } else if (type === 'vm') {
@@ -235,7 +236,8 @@ const updateList = () => {
 
     $('.sortable').off('.folderOrder').on('dragover.folderOrder', sortTable).on('dragenter.folderOrder', (e) => { e.preventDefault(); });
 
-    $('.item').on('dragstart', (e) => { e.target.classList.add("dragging") }).on('dragend', (e) => { e.target.classList.remove("dragging") });
+    $('.item').on('dragstart', (e) => { e.target.classList.add("dragging") }).on('dragend', (e) => { e.target.classList.remove("dragging"); updateFolderPreview(); });
+    updateFolderPreview();
 };
 
 /**
