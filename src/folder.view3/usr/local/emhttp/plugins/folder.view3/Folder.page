@@ -263,6 +263,10 @@ Markdown="false"
                     </blockquote>
                 </div>
             </li>
+            <li class="folder-shortcuts" constraint="preview-1 preview-2 preview-3 preview-4">
+                <div role="group" aria-labelledby="folder-shortcuts-title">
+                <h3 id="folder-shortcuts-title" data-i18n="preview-shortcuts">Shortcut icons</h3>
+                <ul>
             <li constraint="preview-1 preview-2 preview-3 preview-4 docker">
                 <div class="basic">
                     <dl>
@@ -308,25 +312,14 @@ Markdown="false"
                     </blockquote>
                 </div>
             </li>
-            <li constraint="preview-1 preview-2 preview-3 preview-4">
-                <div class="basic">
-                    <dl>
-                        <dt data-i18n="preview-vertical-bars">Preview vertical bars:</dt>
-                        <dd>
-                            <input class="basic-switch" name="preview_vertical_bars" type="checkbox" style="display: none;" onchange="updateForm()" />
-                        </dd>
-                    </dl>
-                    <blockquote class="inline_help">
-                        <p data-i18n="[html]preview-vertical-bars-tooltip">
-                            Will Show vertical bars between container/VM inside the folder preview.
-                        </p>
-                    </blockquote>
+                </ul>
                 </div>
             </li>
+
             <li constraint="docker preview-1 preview-2 preview-3 preview-4">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="context">Preview Context:</dt>
+                        <dt data-i18n="context">Popup Configuration:</dt>
                         <dd>
                             <img class="img" style="visibility: hidden;">
                             <select name="context" onchange="updateForm()">
@@ -338,7 +331,7 @@ Markdown="false"
                     </dl>
                     <blockquote class="inline_help">
                         <p data-i18n="[html]context-tooltip">
-                            Will show the preview context type you choose.
+                            Choose which popup opens from a container icon or name: None, the standard Unraid menu, or Advanced details.
                         </p>
                     </blockquote>
                 </div>
@@ -404,6 +397,23 @@ Markdown="false"
             </li>
         </ul>
         
+        <div class="folder-borders" role="group" aria-labelledby="folder-borders-title">
+        <h3 id="folder-borders-title" data-i18n="preview-borders">Border and bars</h3>
+            <div constraint="preview-1 preview-2 preview-3 preview-4">
+                <div class="basic">
+                    <dl>
+                        <dt data-i18n="preview-vertical-bars">Preview vertical bars:</dt>
+                        <dd>
+                            <input class="basic-switch" name="preview_vertical_bars" type="checkbox" style="display: none;" onchange="updateForm()" />
+                        </dd>
+                    </dl>
+                    <blockquote class="inline_help">
+                        <p data-i18n="[html]preview-vertical-bars-tooltip">
+                            Will Show vertical bars between container/VM inside the folder preview.
+                        </p>
+                    </blockquote>
+                </div>
+            </div>
         <div class="basic">
             <dl>
                 <dt data-i18n="border">Show preview border:</dt>
@@ -420,30 +430,26 @@ Markdown="false"
         <div class="basic" constraint="color">
             <dl>
                 <dt data-i18n="border-color">Preview border and vertical bars color:</dt>
-                <dd>
+                <dd class="folder-color-controls">
                     <input type="color" name="preview_border_color">
-                    <button onclick="event.preventDefault(); $('div.canvas > form')[0].preview_border_color.value = rgbToHex($('body').css('color'));" style="padding:6px;min-width:0;margin:0;margin-left: 1em; position: relative;
-                    top: -0.54em;">
-                        <i class="fa fa-repeat" aria-hidden="true"></i>
-                    </button>
+                    <button type="button" data-i18n="reset-to-default" onclick="this.form.preview_border_color.value = rgbToHex($('body').css('color')); this.form.preview_border_color.dispatchEvent(new Event('input', { bubbles: true }));">Reset to default</button>
                 </dd>
             </dl>
             <blockquote class="inline_help">
                 <p data-i18n="[html]border-color-tooltip">
                     Will make the preview border and vertical bars a specific color.
                     <br>
-                    The <i class="fa fa-repeat" aria-hidden="true"></i> button will set the color to the current font color.
+                    Reset to default sets the color to the current theme's font color.
                 </p>
             </blockquote>
+        </div>
         </div>
         </fieldset>
         </section>
         <section class="folder-assignment" aria-label="Order and folder assignment">
+        <fieldset class="folder-order-settings">
+        <legend data-i18n="order-drag-drop">Order (Drag and Drop)</legend>
         <div class="basic">
-            <dl>
-                <dt data-i18n="order">Order:</dt>
-                <dd></dd>
-            </dl>
             <blockquote class="inline_help">
                 <p data-i18n="[html]order-tooltip">
                     Drag and drop to make your desired order, if you edit the regex the selection will be deselected.
@@ -470,6 +476,7 @@ Markdown="false"
                 </dd>
             </dl>
         </div>
+        </fieldset>
         </section>
         <div class="folder-form-actions">
             <input type="submit" value="Submit" data-i18n="[value]submit">

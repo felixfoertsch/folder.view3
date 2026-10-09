@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(values)) {
 	if ([...plugin.matchAll(pattern)].length !== 1) throw new Error(`Expected one ${key} entity`);
 	plugin = plugin.replace(pattern, `<!ENTITY ${key} "${value}">`);
 }
-plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Demonstrate Default and Advanced context popups in the floating editor preview.\n- Reflect activation mode, graph mode and timeframe; graphs are illustrative.\n- Keep popup actions disabled and escape container details.`);
+plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Group shortcut icons and border/bar controls, rename Popup Configuration.\n- Box Order (Drag and Drop) and align the Reset to default color button.\n- Reset theme color with an immediate preview update.`);
 fs.writeFileSync(output, plugin);
 NODE
 	printf 'Built %s\n' "$output"

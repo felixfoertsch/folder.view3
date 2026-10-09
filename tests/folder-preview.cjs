@@ -32,8 +32,17 @@ assert.ok(source.includes("event.target.closest('.folder-live-preview')"));
 assert.ok(source.includes("split('\\0')[0]"));
 assert.ok(!source.includes('eval('));
 const page = fs.readFileSync(root + 'Folder.page', 'utf8');
-assert.equal((page.match(/<fieldset/g) || []).length, 2);
+assert.equal((page.match(/<fieldset/g) || []).length, 3);
+assert.ok(page.includes('<legend data-i18n="order-drag-drop">Order (Drag and Drop)</legend>'));
+assert.ok(page.includes('class="folder-color-controls"'));
+assert.ok(page.includes('>Reset to default</button>'));
+const borders = page.slice(page.indexOf('class="folder-borders"'), page.indexOf('class="folder-assignment"'));
+for (const name of ['preview_border', 'preview_vertical_bars', 'preview_border_color']) assert.ok(borders.includes(`name="${name}"`));
 assert.ok(page.includes('include/folderRow.js'));
+const shortcuts = page.slice(page.indexOf('class="folder-shortcuts"'), page.indexOf('name="preview_vertical_bars"'));
+for (const name of ['preview_webui', 'preview_logs', 'preview_console']) assert.ok(shortcuts.includes(`name="${name}"`));
+assert.ok(page.includes('Popup Configuration:'));
+assert.equal(JSON.parse(fs.readFileSync(root + 'langs/en.json', 'utf8')).context, 'Popup Configuration:');
 assert.ok(fs.readFileSync(root + 'styles/folder.css', 'utf8').includes('position: sticky'));
 vm.runInContext(fs.readFileSync(root + 'scripts/include/previewContext.js', 'utf8') + '\nglobalThis.popup = folderPreviewContextHtml;', context);
 for (const mode of [1, 2]) {
