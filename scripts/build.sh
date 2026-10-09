@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(values)) {
 	if ([...plugin.matchAll(pattern)].length !== 1) throw new Error(`Expected one ${key} entity`);
 	plugin = plugin.replace(pattern, `<!ENTITY ${key} "${value}">`);
 }
-plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Compact two-column folder editor with preserved assignment order and reliable exports.\n- Correct VM custom actions, dashboard restart and new-folder refresh handling.\n- Validate configuration boundaries, save atomically under lock and escape folder HTML.\n- Bound and cache Tailscale lookups; preserve Folder View 2 import and labels.`);
+plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Fix missing folders after update: preserve string responses expected by frontend JSON.parse calls.\n- Retain compact editor, action fixes, validated atomic storage and Tailscale caching.`);
 fs.writeFileSync(output, plugin);
 NODE
 	printf 'Built %s\n' "$output"

@@ -200,7 +200,8 @@
     }
 
     function folderRequest(array $input, array $keys, callable $handle): void {
-        header('Content-Type: application/json');
+        // Existing callers explicitly JSON.parse() the response string.
+        header('Content-Type: text/plain; charset=utf-8');
         try {
             $args = [];
             foreach ($keys as $key) {

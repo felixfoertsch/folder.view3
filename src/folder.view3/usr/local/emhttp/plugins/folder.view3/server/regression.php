@@ -2,6 +2,7 @@
 // CLI-only, isolated storage: php regression.php [path/to/lib.php]
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 $source = file_get_contents($argv[1] ?? __DIR__ . '/lib.php');
+if (!str_contains($source, "header('Content-Type: text/plain; charset=utf-8')") || str_contains($source, "header('Content-Type: application/json')")) throw new RuntimeException('Frontend requires string responses for explicit JSON.parse');
 $start = strpos($source, '    function fv2_tailscale_status(');
 $end = strpos($source, '    function readInfo(');
 if ($start === false || $end === false) throw new RuntimeException('Missing test seam');
