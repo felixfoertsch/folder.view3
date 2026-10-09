@@ -24,7 +24,7 @@
 .folder-shortcuts { list-style: none; padding-block: .5rem; margin-block: .75rem; }
 .folder-shortcuts h3, .folder-borders h3 { margin: 0 0 .5rem; }
 .folder-borders { padding-top: .5rem; margin-top: .75rem; }
-.folder-editor .folder-color-controls { display: flex; align-items: center; flex-wrap: nowrap; gap: .5rem; }
+.folder-editor .folder-color-controls { display: flex; flex-direction: row; align-items: center; flex-wrap: nowrap; gap: .5rem; }
 .folder-color-controls input[type="color"] { width: 3rem; flex: 0 0 3rem; margin: 0; }
 .folder-color-controls button { margin: 0; min-width: 0; white-space: nowrap; }
 .folder-editor .folder-popup-settings { margin-top: 1rem; list-style: none; }

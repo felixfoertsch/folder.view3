@@ -45,7 +45,7 @@ assert.ok(page.includes('Popup Configuration:'));
 assert.ok(page.indexOf('class="folder-popup-settings"') > page.indexOf('name="preview_border_color"'));
 for (const text of ['Add WebUI icon:', 'Add Logs icon:', 'Add Console icon:']) assert.ok(page.includes(text));
 const css = fs.readFileSync(root + 'styles/folder.css', 'utf8');
-assert.ok(css.includes('flex-wrap: nowrap'));
+assert.ok(css.includes('flex-direction: row; align-items: center; flex-wrap: nowrap'));
 assert.ok(!css.includes('border-block: 1px') && !css.includes('border-top: 1px'));
 assert.equal(JSON.parse(fs.readFileSync(root + 'langs/en.json', 'utf8')).context, 'Popup Configuration:');
 assert.ok(fs.readFileSync(root + 'styles/folder.css', 'utf8').includes('position: sticky'));
