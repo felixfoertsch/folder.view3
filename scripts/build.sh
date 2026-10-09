@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(values)) {
 	if ([...plugin.matchAll(pattern)].length !== 1) throw new Error(`Expected one ${key} entity`);
 	plugin = plugin.replace(pattern, `<!ENTITY ${key} "${value}">`);
 }
-plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Add 16 native Unraid-style folder icon presets with orange selection outlines.\n- Reveal custom icon URL field from the final picker tile; preserve existing custom icons.\n- Render presets consistently in preview, Docker, VMs, Dashboard and folder management.`);
+plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Keep icon picker tiles icon-only, remove theme-added button glyphs.\n- Match preset icon width and spacing to native question-mark icons for aligned folder names.`);
 fs.writeFileSync(output, plugin);
 NODE
 	printf 'Built %s\n' "$output"

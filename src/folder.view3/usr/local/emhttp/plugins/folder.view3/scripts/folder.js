@@ -23,12 +23,6 @@ for (const preset of [...folderIconPresets, 'custom']) {
     button.title = label;
     button.setAttribute('aria-label', label);
     button.innerHTML = `<i class="fa fa-${preset === 'custom' ? 'link' : preset}" aria-hidden="true"></i>`;
-    if (preset === 'custom') {
-        button.classList.add('folder-icon-custom-choice');
-        const caption = document.createElement('span');
-        caption.textContent = label;
-        button.append(caption);
-    }
     button.addEventListener('click', () => {
         const input = document.querySelector('form.folder-editor').elements.icon;
         if (preset === 'custom') input.value = iconPicker.dataset.customIcon || '';
