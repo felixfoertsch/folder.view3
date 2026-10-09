@@ -73,6 +73,7 @@ require_once('/usr/local/emhttp/plugins/folder.view3/langs/script.php');
 </div>
 <hr>
 
+<script src="<?autov('/plugins/folder.view3/scripts/include/escapeHtml.js')?>"></script>
 <script src="<?=autov('/plugins/folder.view3/scripts/folderview3.js')?>"></script>
 
 <input type="file" style="display: none;" accept=".json">

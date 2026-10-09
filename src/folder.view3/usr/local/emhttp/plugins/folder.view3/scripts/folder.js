@@ -84,7 +84,7 @@ $('div.canvas > form')[0].preview_border_color.value = rgbToHex($('body').css('c
         };
 
         currFolder.actions?.forEach((e, i) => {
-            $('.custom-action-wrapper').append(`<div class="custom-action-n-${i}">${e.name} <button onclick="return customAction(${i});"><i class="fa fa-pencil" aria-hidden="true"></i></button><button onclick="return rCcustomAction(${i});"><i class="fa fa-trash" aria-hidden="true"></i></button><input type="hidden" name="custom_action[]" value="${btoa(JSON.stringify(e))}"></div>`);
+            $('.custom-action-wrapper').append(`<div class="custom-action-n-${i}">${folderHtml(e.name)} <button onclick="return customAction(${i});"><i class="fa fa-pencil" aria-hidden="true"></i></button><button onclick="return rCcustomAction(${i});"><i class="fa fa-trash" aria-hidden="true"></i></button><input type="hidden" name="custom_action[]" value="${btoa(JSON.stringify(e))}"></div>`);
         });
 
 
@@ -134,11 +134,27 @@ const updateIcon = (e) => {
  * @param {*} e the element
  */
 const updateRegex = (e) => {
+    let regex;
+    try {
+        regex = e.value ? new RegExp(e.value) : null;
+        e.setCustomValidity('');
+    } catch (error) {
+        e.setCustomValidity('Invalid regular expression');
+        e.reportValidity();
+        return;
+    }
+    // Keep current manual choices and drag order when redrawing.
+    const rows = [...document.querySelectorAll('.sortable input[name="containers[]"]:not(:disabled)')];
+    if (rows.length) {
+        const elements = new Map([...choose, ...selected].map(el => [el.Name, el]));
+        selected = rows.filter(input => input.checked).map(input => elements.get(input.value)).filter(Boolean);
+        choose = rows.filter(input => !input.checked).map(input => elements.get(input.value)).filter(Boolean);
+    }
     choose = choose.concat(selectedRegex);
     const fldName = $('[name="name"]')[0].value;
     selectedRegex = choose.filter(el => el.Label === fldName);
-    if (e.value) {
-        const regex = new RegExp(e.value);
+    choose = choose.filter(el => el.Label !== fldName);
+    if (regex) {
         for (let i = 0; i < choose.length; i++) {
             if (regex.test(choose[i].Name)) {
                 const tmpSel = choose.splice(i, 1)[0];
@@ -195,17 +211,17 @@ const updateList = () => {
 
     // append the selected elements
     for (const el of selected) {
-        table.append($(`<tr class="item" draggable="true"><td><span style="cursor: pointer;" onclick="setIconAsContainer(this)"><img src="${el.Icon}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span>${el.Name}</td><td><input class="container-switch" checked type="checkbox" name="containers[]" value="${el.Name}" style="display: none;"></td></tr>`));
+        table.append($(`<tr class="item" draggable="true"><td><span style="cursor: pointer;" onclick="setIconAsContainer(this)"><img src="${folderHtml(el.Icon)}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span>${folderHtml(el.Name)}</td><td><input class="container-switch" checked type="checkbox" name="containers[]" value="${folderHtml(el.Name)}" style="display: none;"></td></tr>`));
     }
 
     // append the rest of the elements
     for (const el of choose) {
-        table.append($(`<tr class="item" draggable="true"><td><span style="cursor: pointer;" onclick="setIconAsContainer(this)"><img src="${el.Icon}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span>${el.Name}</td><td><input class="container-switch" type="checkbox" name="containers[]" value="${el.Name}" style="display: none;"></td></tr>`));
+        table.append($(`<tr class="item" draggable="true"><td><span style="cursor: pointer;" onclick="setIconAsContainer(this)"><img src="${folderHtml(el.Icon)}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span>${folderHtml(el.Name)}</td><td><input class="container-switch" type="checkbox" name="containers[]" value="${folderHtml(el.Name)}" style="display: none;"></td></tr>`));
     }
 
     // prepend the selected regex element
     for (const el of selectedRegex) {
-        table.prepend($(`<tr class="item"><td><span style="cursor: pointer;" onclick="setIconAsContainer(this)"><img src="${el.Icon}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span>${el.Name}</td><td><input class="container-switch" checked disabled type="checkbox" name="containers[]" value="${el.Name}" style="display: none;"></td></tr>`));
+        table.prepend($(`<tr class="item"><td><span style="cursor: pointer;" onclick="setIconAsContainer(this)"><img src="${folderHtml(el.Icon)}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span>${folderHtml(el.Name)}</td><td><input class="container-switch" checked disabled type="checkbox" name="containers[]" value="${folderHtml(el.Name)}" style="display: none;"></td></tr>`));
     }
 
     // create the *cool* unraid button for the autostart
@@ -215,7 +231,7 @@ const updateList = () => {
     // stuff for the sort table
     $('.item').css('border-color', $('body').css('color'));
 
-    $('.sortable').on('dragover', sortTable).on('dragenter', (e) => { e.preventDefault(); });
+    $('.sortable').off('.folderOrder').on('dragover.folderOrder', sortTable).on('dragenter.folderOrder', (e) => { e.preventDefault(); });
 
     $('.item').on('dragstart', (e) => { e.target.classList.add("dragging") }).on('dragend', (e) => { e.target.classList.remove("dragging") });
 };
@@ -227,15 +243,14 @@ const updateList = () => {
 const sortTable = (e) => {
     e.preventDefault();
 
-    const sib = [...$('.item:not(.dragging)')];
-
-    const bound = e.delegateTarget.getBoundingClientRect();
-
-    const near = sib.find(el => {
-        return e.clientY - bound.top <= el.offsetTop + el.offsetHeight / 2;
+    const table = e.delegateTarget;
+    const dragging = table.querySelector('.dragging');
+    if (!dragging) return;
+    const near = [...table.querySelectorAll('.item[draggable="true"]:not(.dragging)')].find(el => {
+        const bounds = el.getBoundingClientRect();
+        return e.clientY <= bounds.top + bounds.height / 2;
     });
-
-    $(near).before($('.dragging'));
+    table.querySelector('tbody').insertBefore(dragging, near || null);
 }
 
 /**
@@ -328,9 +343,9 @@ const customAction = (action = undefined) => {
     selectCt.children().remove();
     [...$('input[name*="containers"]:checked').map((i, e) => $(e).val()), ...selectedRegex.map(e => e.Name)].forEach((e) => {
         if(config.conatiners?.includes(e)) {
-            selectCt.append(`<option value="${e}" selected>${e}</option>`);
+            selectCt.append(`<option value="${folderHtml(e)}" selected>${folderHtml(e)}</option>`);
         } else {
-            selectCt.append(`<option value="${e}">${e}</option>`);
+            selectCt.append(`<option value="${folderHtml(e)}">${folderHtml(e)}</option>`);
         }
     });
     const dialog = $('.dialogCustomAction');
@@ -391,7 +406,7 @@ const customAction = (action = undefined) => {
             $(`.custom-action-n-${action} > input[type="hidden"]`).val(btoa(JSON.stringify(cfg)));
             $(`.custom-action-n-${action} > span`).text(cfg.name + ' ');
         } else {
-            $('.custom-action-wrapper').append(`<div class="custom-action-n-${(action !== undefined) ? action : customNumber}"><span>${cfg.name} </span><button onclick="return customAction(${(action !== undefined) ? action : customNumber});"><i class="fa fa-pencil" aria-hidden="true"></i></button><button onclick="return rCcustomAction(${(action !== undefined) ? action : customNumber});"><i class="fa fa-trash" aria-hidden="true"></i></button><input type="hidden" name="custom_action[]" value="${btoa(JSON.stringify(cfg))}"></div>`);
+            $('.custom-action-wrapper').append(`<div class="custom-action-n-${(action !== undefined) ? action : customNumber}"><span>${folderHtml(cfg.name)} </span><button onclick="return customAction(${(action !== undefined) ? action : customNumber});"><i class="fa fa-pencil" aria-hidden="true"></i></button><button onclick="return rCcustomAction(${(action !== undefined) ? action : customNumber});"><i class="fa fa-trash" aria-hidden="true"></i></button><input type="hidden" name="custom_action[]" value="${btoa(JSON.stringify(cfg))}"></div>`);
         }
         $(this).dialog("close");
     };

@@ -13,12 +13,12 @@ const populateTable = async () => {
     vmsTable.empty();
 
     for (const [id, folder] of Object.entries(dockers)) {
-        const fld = `<tr><td>${id}</td><td><img src="${folder.icon}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';">${folder.name}</td><td><button onclick="downloadDocker('${id}')"><i class="fa fa-download"></i></button><button onclick="clearDocker('${id}')"><i class="fa fa-trash"></i></button></td></tr>`;
+        const fld = `<tr><td>${id}</td><td><img src="${folderHtml(folder.icon)}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';">${folderHtml(folder.name)}</td><td><button onclick="downloadDocker('${id}')"><i class="fa fa-download"></i></button><button onclick="clearDocker('${id}')"><i class="fa fa-trash"></i></button></td></tr>`;
         dockerTable.append($(fld));
     }
 
     for (const [id, folder] of Object.entries(vms)) {
-        const fld = `<tr><td>${id}</td><td><img src="${folder.icon}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';">${folder.name}</td><td><button onclick="downloadVm('${id}')"><i class="fa fa-download"></i></button><button onclick="clearVm('${id}')"><i class="fa fa-trash"></i></button></td></tr>`;
+        const fld = `<tr><td>${id}</td><td><img src="${folderHtml(folder.icon)}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';">${folderHtml(folder.name)}</td><td><button onclick="downloadVm('${id}')"><i class="fa fa-download"></i></button><button onclick="clearVm('${id}')"><i class="fa fa-trash"></i></button></td></tr>`;
         vmsTable.append($(fld));
     }
 };
@@ -59,6 +59,7 @@ const importDocker = () => {
                     text: 'Error parsing the input file, please select a JSON file',
                     type: 'error',
                 });
+                return;
             }
             if(content.name) {
                 await $.post('/plugins/folder.view3/server/create.php', { type: 'docker', content: JSON.stringify(content) });
@@ -96,6 +97,7 @@ const importVm = () => {
                     text: 'Error parsing the input file, please select a JSON file',
                     type: 'error',
                 });
+                return;
             }
             if(content.name) {
                 await $.post('/plugins/folder.view3/server/create.php', { type: 'vm', content: JSON.stringify(content) });
@@ -196,13 +198,16 @@ const clearVm = (id) => {
 
 const downloadFile = (name, content) => {
     let element = document.createElement('a');
-    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(content));
+    const url = URL.createObjectURL(new Blob([content], { type: 'application/json;charset=utf-8' }));
+    element.setAttribute('href', url);
     element.setAttribute('download', name);
 
     element.style.display = 'none';
     document.body.appendChild(element);
 
     element.click();
+    element.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
 const fileManager = async (type) => {

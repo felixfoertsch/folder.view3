@@ -11,6 +11,7 @@ Markdown="false"
     }
 </script>
 <? require_once('/usr/local/emhttp/plugins/folder.view3/langs/script.php') ?>
+<script src="<?autov('/plugins/folder.view3/scripts/include/escapeHtml.js')?>"></script>
 <script src="<?autov('/webGui/javascript/jquery.switchbutton.js')?>"></script>
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.switchbutton.css')?>">
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.ui.css')?>">
@@ -20,7 +21,8 @@ Markdown="false"
 <script src="<?autov('/plugins/folder.view3/scripts/include/jquery.multiselect.js')?>"></script>
 
 <div class="canvas">
-    <form onsubmit="submitForm(this); return false">
+    <form class="folder-editor" onsubmit="submitForm(this); return false">
+        <section class="folder-settings" aria-label="Folder settings">
         <div class="basic">
             <dl>
                 <dt data-i18n="name">Name:</dt>
@@ -421,8 +423,8 @@ Markdown="false"
                 </p>
             </blockquote>
         </div>
-        <input type="submit" value="Submit" data-i18n="[value]submit">
-        <input type="button" value="Cancel" data-i18n="[value]cancel" onclick="cancelBtn()">
+        </section>
+        <section class="folder-assignment" aria-label="Order and folder assignment">
         <div class="basic">
             <dl>
                 <dt data-i18n="order">Order:</dt>
@@ -434,7 +436,7 @@ Markdown="false"
                 </p>
             </blockquote>
         </div>
-        <div class="basic" style="width: 115em; text-align: center; margin-top: 3em;">
+        <div class="basic folder-order-table">
             <dl>
                 <dd>
                     <table class="sortable">
@@ -453,6 +455,11 @@ Markdown="false"
                     </table>
                 </dd>
             </dl>
+        </div>
+        </section>
+        <div class="folder-form-actions">
+            <input type="submit" value="Submit" data-i18n="[value]submit">
+            <input type="button" value="Cancel" data-i18n="[value]cancel" onclick="cancelBtn()">
         </div>
     </form>
 </div>
