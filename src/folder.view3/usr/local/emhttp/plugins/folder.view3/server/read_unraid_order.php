@@ -1,4 +1,4 @@
 <?php
-  require_once("/usr/local/emhttp/plugins/folder.view3/server/lib.php");
-  echo json_encode(readUnraidOrder($_GET['type']));
+    require_once("/usr/local/emhttp/plugins/folder.view3/server/lib.php");
+    folderRequest($_GET, ['type'], 'readUnraidOrder');
 ?>

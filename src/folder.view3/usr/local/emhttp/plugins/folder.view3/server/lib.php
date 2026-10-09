@@ -26,23 +26,30 @@
     require_once("$documentRoot/plugins/dynamix.docker.manager/include/DockerClient.php");
     require_once ("$documentRoot/plugins/dynamix.vm.manager/include/libvirt_helpers.php");
 
+    function fv2_tailscale_status(string $containerName): array {
+        static $cache = [];
+        if (!preg_match('/^[a-zA-Z0-9_.-]+$/D', $containerName)) return [];
+        if (array_key_exists($containerName, $cache)) return $cache[$containerName];
+        if (is_callable(['DockerUtil', 'tailscaleStatus'])) {
+            $status = DockerUtil::tailscaleStatus($containerName);
+            return $cache[$containerName] = is_array($status) ? $status : [];
+        }
+        // ponytail: older Unraid only; one bounded status command per container/request.
+        $output = [];
+        $code = -1;
+        exec('timeout -k 1s 2s docker exec ' . escapeshellarg($containerName) . ' tailscale status --peers=false --json 2>/dev/null', $output, $code);
+        $status = $code === 0 ? json_decode(implode("\n", $output), true) : null;
+        return $cache[$containerName] = is_array($status) ? $status : [];
+    }
+
     function fv2_get_tailscale_ip_from_container(string $containerName): ?string {
         if (empty($containerName) || !preg_match('/^[a-zA-Z0-9_.-]+$/', $containerName)) {
             fv2_debug_log("    fv2_get_tailscale_ip_from_container: Invalid container name for exec: $containerName");
             return null;
         }
-        $command = "docker exec " . escapeshellarg($containerName) . " tailscale ip -4 2>/dev/null";
-        fv2_debug_log("    fv2_get_tailscale_ip_from_container: Executing: $command for $containerName");
-        $output = [];
-        $return_var = -1;
-        @exec($command, $output, $return_var);
-        
-        if ($return_var === 0 && !empty($output) && filter_var(trim($output[0]), FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-            $ip = trim($output[0]);
-            fv2_debug_log("    fv2_get_tailscale_ip_from_container: Found IP for $containerName: $ip");
-            return $ip;
+        foreach (fv2_tailscale_status($containerName)['Self']['TailscaleIPs'] ?? [] as $ip) {
+            if (is_string($ip) && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) return $ip;
         }
-        fv2_debug_log("    fv2_get_tailscale_ip_from_container: No valid IP found for $containerName. Output: " . json_encode($output) . ", Return: $return_var");
         return null;
     }
 
@@ -51,32 +58,115 @@
             fv2_debug_log("    fv2_get_tailscale_fqdn_from_container: Invalid container name for exec: $containerName");
             return null;
         }
-        $command = "docker exec " . escapeshellarg($containerName) . " tailscale status --peers=false --json 2>/dev/null";
-        fv2_debug_log("    fv2_get_tailscale_fqdn_from_container: Executing: $command for $containerName");
-        $output_lines = [];
-        $return_var = -1;
-        @exec($command, $output_lines, $return_var);
-        $json_output = implode("\n", $output_lines);
+        $name = fv2_tailscale_status($containerName)['Self']['DNSName'] ?? '';
+        return is_string($name) && preg_match('/^[a-zA-Z0-9.-]+$/D', $name) ? rtrim($name, '.') : null;
+    }
 
-        if ($return_var === 0 && !empty($json_output)) {
-            $status_data = json_decode($json_output, true);
-            if (isset($status_data['Self']['DNSName'])) {
-                $dnsName = rtrim($status_data['Self']['DNSName'], '.'); 
-                fv2_debug_log("    fv2_get_tailscale_fqdn_from_container: Found DNSName for $containerName: " . $dnsName);
-                return $dnsName;
+    function validateType(string $type): void {
+        if (!in_array($type, ['docker', 'vm'], true)) throw new InvalidArgumentException('Invalid folder type');
+    }
+
+    function validateId(string $id): void {
+        if (!preg_match('/^[a-zA-Z0-9]{1,64}$/D', $id)) throw new InvalidArgumentException('Invalid folder ID');
+    }
+
+    function validateFolder($folder): void {
+        if (!is_array($folder) || !isset($folder['name'], $folder['icon'], $folder['settings'], $folder['containers']) ||
+            !is_string($folder['name']) || trim($folder['name']) === '' || strlen($folder['name']) > 256 ||
+            !is_string($folder['icon']) || !is_array($folder['settings']) || !is_array($folder['containers'])) {
+            throw new InvalidArgumentException('Invalid folder schema');
+        }
+        $icon = $folder['icon'];
+        if (preg_match('/[\x00-\x20\x7f\x22\x27<>`\\\\]/', $icon) ||
+            ($icon !== '' && !preg_match('~^(?:https?://[^/]+(?:/.*)?|/(?!/).*|data:image/(?:png|jpeg|gif|webp);base64,[a-zA-Z0-9+/]+=*)$~Di', $icon))) {
+            throw new InvalidArgumentException('Invalid folder icon');
+        }
+        // Reject markup in every persisted string, including optional and future fields.
+        $check = function ($value) use (&$check): void {
+            if (is_array($value)) { foreach ($value as $item) $check($item); }
+            elseif (is_string($value)) {
+                if (strlen($value) > 1048576 || preg_match('/[\x00-\x08\x0b\x0c\x0e-\x1f<>]/', $value)) throw new InvalidArgumentException('Invalid folder text');
+            } elseif (!is_bool($value) && !is_int($value) && !is_float($value) && $value !== null) throw new InvalidArgumentException('Invalid folder value');
+        };
+        $check($folder);
+        foreach ($folder['containers'] as $name) {
+            if (!is_string($name) || preg_match('/[\x22\x27`\\\\]/', $name)) throw new InvalidArgumentException('Invalid container name');
+        }
+        if (isset($folder['regex']) && !is_string($folder['regex'])) throw new InvalidArgumentException('Invalid folder regex');
+        foreach ($folder['settings'] as $key => $value) {
+            if (in_array($key, ['preview', 'context', 'context_trigger', 'context_graph', 'context_graph_time'], true)) {
+                if (!is_int($value) || $value < 0 || $value > ($key === 'context_graph_time' ? 86400 : 4)) throw new InvalidArgumentException('Invalid folder setting');
+            } elseif ($key === 'preview_border_color') {
+                if (!is_string($value) || !preg_match('/^#[a-fA-F0-9]{6}$/D', $value)) throw new InvalidArgumentException('Invalid border color');
+            } elseif ($key === 'preview_text_width') {
+                if (!is_string($value) || !preg_match('/^(?:[0-9]+(?:\.[0-9]+)?(?:px|em|rem|%|vw)?)?$/D', $value)) throw new InvalidArgumentException('Invalid preview width');
+            } elseif (!is_bool($value)) throw new InvalidArgumentException('Invalid folder setting');
+        }
+        if (isset($folder['actions']) && !is_array($folder['actions'])) throw new InvalidArgumentException('Invalid folder actions');
+        foreach ($folder['actions'] ?? [] as $action) {
+            if (!is_array($action) || !isset($action['name'], $action['type']) || !is_string($action['name']) ||
+                !preg_match('/^[a-zA-Z0-9_. -]+$/D', $action['name']) ||
+                !is_int($action['type']) || !in_array($action['type'], [0, 1, 2], true)) throw new InvalidArgumentException('Invalid folder action');
+            foreach (['action', 'modes'] as $key) {
+                if (isset($action[$key]) && (!is_int($action[$key]) || $action[$key] < 0 || $action[$key] > 3)) throw new InvalidArgumentException('Invalid action mode');
+            }
+            foreach (['script', 'script_args'] as $key) {
+                if (isset($action[$key]) && !is_string($action[$key])) throw new InvalidArgumentException('Invalid action script');
+            }
+            if (isset($action['script']) && ($action['script'] === '' || in_array($action['script'], ['.', '..'], true) || preg_match('/[\/\\\\\x22\x27`]/', $action['script']))) throw new InvalidArgumentException('Invalid script name');
+            if (isset($action['script_sync']) && !is_bool($action['script_sync'])) throw new InvalidArgumentException('Invalid script mode');
+            if (isset($action['script_icon']) && (!is_string($action['script_icon']) || !preg_match('/^(?:fa-[a-z0-9-]+(?: fa-[a-z0-9-]+)*)?$/D', $action['script_icon']))) throw new InvalidArgumentException('Invalid action icon');
+            if (isset($action['conatiners'])) {
+                if (!is_array($action['conatiners'])) throw new InvalidArgumentException('Invalid action containers');
+                foreach ($action['conatiners'] as $name) {
+                    if (!is_string($name) || preg_match('/[\x22\x27`\\\\]/', $name)) throw new InvalidArgumentException('Invalid action container');
+                }
             }
         }
-        fv2_debug_log("    fv2_get_tailscale_fqdn_from_container: No DNSName found for $containerName. Output: " . $json_output . ", Return: $return_var");
-        return null;
+    }
+
+    function folderFile(string $type, ?callable $mutate = null): string {
+        global $configDir;
+        validateType($type);
+        if (!is_dir($configDir) && !mkdir($configDir, 0770, true) && !is_dir($configDir)) throw new RuntimeException('Cannot create folder directory');
+        $path = "$configDir/$type.json";
+        $lock = fopen("$path.lock", 'c');
+        if ($lock === false) throw new RuntimeException('Cannot open folder lock');
+        $temp = null;
+        try {
+            if (!flock($lock, LOCK_EX)) throw new RuntimeException('Cannot lock folder file');
+            $exists = file_exists($path);
+            $content = $exists ? file_get_contents($path) : '{}';
+            if ($content === false) throw new RuntimeException('Cannot read folder file');
+            $object = json_decode($content);
+            if (json_last_error() !== JSON_ERROR_NONE || !is_object($object)) throw new RuntimeException('Corrupt folder JSON; refusing overwrite');
+            $data = json_decode($content, true);
+            foreach ($data as $id => $folder) {
+                validateId((string)$id);
+                validateFolder($folder);
+            }
+            if ($mutate !== null) $data = $mutate($data);
+            if (!$exists || $mutate !== null) {
+                $content = json_encode((object)$data, JSON_THROW_ON_ERROR);
+                $temp = tempnam($configDir, ".$type-");
+                if ($temp === false || dirname($temp) !== $configDir) throw new RuntimeException('Cannot create folder temporary file');
+                if (file_put_contents($temp, $content) !== strlen($content) || !chmod($temp, $exists ? (fileperms($path) & 0777) : 0660) || !rename($temp, $path)) throw new RuntimeException('Cannot save folder file');
+                $temp = null;
+            }
+            return $content;
+        } finally {
+            if ($temp !== null && is_file($temp)) unlink($temp);
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
     }
 
     function readFolder(string $type) : string {
-        global $configDir;
-        if(!file_exists("$configDir/$type.json")) { createFile($type); }
-        return file_get_contents("$configDir/$type.json");
+        return folderFile($type);
     }
 
     function readUserPrefs(string $type) : string {
+        validateType($type);
         $userPrefsDir = "/boot/config/plugins";
         $prefsFilePath = '';
         if($type == 'docker') { $prefsFilePath = "$userPrefsDir/dockerMan/userprefs.cfg"; }
@@ -88,34 +178,52 @@
     }
     
     function updateFolder(string $type, string $content, string $id = '') : void {
-        global $configDir;
-        if(!file_exists("$configDir/$type.json")) { createFile($type); if (empty($id)) $id = generateId(); }
-        if(empty($id)) { $id = generateId(); }
-        $fileData = json_decode(file_get_contents("$configDir/$type.json"), true) ?: [];
-        $fileData[$id] = json_decode($content, true);
-        file_put_contents("$configDir/$type.json", json_encode($fileData));
+        validateType($type);
+        if ($id === '') $id = generateId();
+        validateId($id);
+        $folder = json_decode($content, true);
+        if (json_last_error() !== JSON_ERROR_NONE) throw new InvalidArgumentException('Invalid folder JSON');
+        validateFolder($folder);
+        folderFile($type, function ($data) use ($id, $folder) { $data[$id] = $folder; return $data; });
     }
 
     function deleteFolder(string $type, string $id) : void {
-        global $configDir;
-        if(!file_exists("$configDir/$type.json")) { createFile($type); return; }
-        $fileData = json_decode(file_get_contents("$configDir/$type.json"), true) ?: [];
-        unset($fileData[$id]);
-        file_put_contents("$configDir/$type.json", json_encode($fileData));
+        validateType($type);
+        validateId($id);
+        folderFile($type, function ($data) use ($id) { unset($data[$id]); return $data; });
     }
 
     function generateId(int $length = 20) : string {
-        return substr(str_replace(['+', '/', '='], '', base64_encode(random_bytes((int)ceil($length * 3 / 4)))), 0, $length);
+        $id = '';
+        while (strlen($id) < $length) $id .= preg_replace('/[^a-zA-Z0-9]/', '', base64_encode(random_bytes($length)));
+        return substr($id, 0, $length);
+    }
+
+    function folderRequest(array $input, array $keys, callable $handle): void {
+        header('Content-Type: application/json');
+        try {
+            $args = [];
+            foreach ($keys as $key) {
+                if (!isset($input[$key]) || !is_string($input[$key])) throw new InvalidArgumentException('Missing or invalid request field');
+                $args[] = $input[$key];
+            }
+            $result = $handle(...$args);
+            if ($result !== null) echo is_string($result) ? $result : json_encode($result, JSON_THROW_ON_ERROR);
+        } catch (InvalidArgumentException $error) {
+            http_response_code(400);
+            echo json_encode(['error' => $error->getMessage()]);
+        } catch (Throwable $error) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Folder operation failed; configuration unchanged']);
+        }
     }
 
     function createFile(string $type): void {
-        global $configDir;
-        if (!is_dir($configDir)) { @mkdir($configDir, 0770, true); }
-        $default = ['docker' => '{}', 'vm' => '{}'];
-        @file_put_contents("$configDir/$type.json", $default[$type] ?? '{}');
+        folderFile($type);
     }
 
     function readInfo(string $type): array {
+        validateType($type);
         fv2_debug_log("readInfo called for type: $type");
         $info = [];
         if ($type == "docker") {
@@ -311,7 +419,7 @@
                 fv2_debug_log("  $containerName: Resolved Standard WebUi: '$finalWebUi'");
                 
                 $finalTsWebUi = '';
-                if ($isTailscaleEnabledForContainer) { 
+                if ($isTailscaleEnabledForContainer && !empty($ct['info']['State']['Running'])) {
                     fv2_debug_log("  $containerName: Tailscale is ENABLED. Attempting to resolve TS WebUI.");
                     $baseTsTemplateFromHelper = '';
                     if (!empty($rawTsXmlUrl)) { 
@@ -395,6 +503,7 @@
     }
 
     function readUnraidOrder(string $type): array {
+        validateType($type);
         fv2_debug_log("readUnraidOrder called for type: $type");
         $user_prefs_path = "/boot/config/plugins";
         $order = [];

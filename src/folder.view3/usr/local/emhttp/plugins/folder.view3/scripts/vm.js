@@ -484,7 +484,7 @@ const actionFolder = async (id, action) => {
     if(errors.length > 0) {
         swal({
             title:'Execution error',
-            text:errors.join('<br>'),
+            text:errors.map(folderHtml).join('<br>'),
             type:'error',
             html:true,
             confirmButtonText:'Ok'
@@ -608,8 +608,8 @@ const addVMFolderContext = (id) => {
         opts.push(
             ...globalFolders[id].actions.map((e, i) => {
                 return {
-                    text: e.name,
-                    icon: e.script_icon || "fa-bolt",
+                    text: folderHtml(e.name),
+                    icon: folderHtml(e.script_icon || "fa-bolt"),
                     action: (e) => { e.preventDefault(); folderCustomAction(id, i); }
                 }
             })
@@ -690,8 +690,8 @@ const addVMFolderContext = (id) => {
             icon: 'fa-bars',
             subMenu: globalFolders[id].actions.map((e, i) => {
                 return {
-                    text: e.name,
-                    icon: e.script_icon || "fa-bolt",
+                    text: folderHtml(e.name),
+                    icon: folderHtml(e.script_icon || "fa-bolt"),
                     action: (e) => { e.preventDefault(); folderCustomAction(id, i); }
                 }
             })

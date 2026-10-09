@@ -805,8 +805,8 @@ const addDockerFolderContext = (id) => {
         opts.push(
             ...globalFolders.docker[id].actions.map((e, i) => {
                 return {
-                    text: e.name,
-                    icon: e.script_icon || "fa-bolt",
+                    text: folderHtml(e.name),
+                    icon: folderHtml(e.script_icon || "fa-bolt"),
                     action: (e) => { e.preventDefault(); folderDockerCustomAction(id, i); }
                 }
             })
@@ -893,8 +893,8 @@ const addDockerFolderContext = (id) => {
             icon: 'fa-bars',
             subMenu: globalFolders.docker[id].actions.map((e, i) => {
                 return {
-                    text: e.name,
-                    icon: e.script_icon || "fa-bolt",
+                    text: folderHtml(e.name),
+                    icon: folderHtml(e.script_icon || "fa-bolt"),
                     action: (e) => { e.preventDefault(); folderDockerCustomAction(id, i); }
                 }
             })
@@ -974,7 +974,7 @@ const actionFolderDocker = async (id, action) => {
     if(errors.length > 0) {
         swal({
             title: $.i18n('exec-error'),
-            text:errors.join('<br>'),
+            text:errors.map(folderHtml).join('<br>'),
             type:'error',
             html:true,
             confirmButtonText:'Ok'
@@ -1110,8 +1110,8 @@ const addVMFolderContext = (id) => {
         opts.push(
             ...globalFolders.vms[id].actions.map((e, i) => {
                 return {
-                    text: e.name,
-                    icon: e.script_icon || "fa-bolt",
+                    text: folderHtml(e.name),
+                    icon: folderHtml(e.script_icon || "fa-bolt"),
                     action: (e) => { e.preventDefault(); folderVMCustomAction(id, i); }
                 }
             })
@@ -1192,8 +1192,8 @@ const addVMFolderContext = (id) => {
             icon: 'fa-bars',
             subMenu: globalFolders.vms[id].actions.map((e, i) => {
                 return {
-                    text: e.name,
-                    icon: e.script_icon || "fa-bolt",
+                    text: folderHtml(e.name),
+                    icon: folderHtml(e.script_icon || "fa-bolt"),
                     action: (e) => { e.preventDefault(); folderVMCustomAction(id, i); }
                 }
             })
@@ -1261,7 +1261,7 @@ const actionFolderVM = async (id, action) => {
     if(errors.length > 0) {
         swal({
             title: $.i18n('exec-error'),
-            text:errors.join('<br>'),
+            text:errors.map(folderHtml).join('<br>'),
             type:'error',
             html:true,
             confirmButtonText:'Ok'

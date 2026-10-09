@@ -291,10 +291,15 @@ const submitForm = async (e) => {
         actions
     }
     // send the data to the right endpoint
-    if (folderId) {
-        await $.post('/plugins/folder.view3/server/update.php', { type: type, content: JSON.stringify(folder), id: folderId });
-    } else {
-        await $.post('/plugins/folder.view3/server/create.php', { type: type, content: JSON.stringify(folder) });
+    try {
+        if (folderId) {
+            await $.post('/plugins/folder.view3/server/update.php', { type: type, content: JSON.stringify(folder), id: folderId });
+        } else {
+            await $.post('/plugins/folder.view3/server/create.php', { type: type, content: JSON.stringify(folder) });
+        }
+    } catch (error) {
+        swal({ title: $.i18n('exec-error'), text: 'Folder could not be saved. Check configuration and retry; changes remain in this form.', type: 'error' });
+        return false;
     }
 
     // return to the right tab

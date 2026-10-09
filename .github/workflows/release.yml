@@ -24,7 +24,13 @@ jobs:
       - name: Check workflow
         run: mise exec -- actionlint .github/workflows/release.yml
       - name: Check Docker load and migration compatibility
-        run: mise exec -- node tests/docker-load.cjs
+        run: |
+          mise exec -- node tests/docker-load.cjs
+          mise exec -- node tests/folder-editor.cjs
+          mise exec -- node tests/folder-actions.cjs
+          mise exec -- node tests/folder-export.cjs
+      - name: Check storage and cache boundaries
+        run: php src/folder.view3/usr/local/emhttp/plugins/folder.view3/server/regression.php
       - name: Build plugin
         run: |
           version="$(date -u +%Y.%m.%d).${GITHUB_RUN_NUMBER}"

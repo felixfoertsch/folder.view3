@@ -1415,8 +1415,8 @@ const addDockerFolderContext = (id) => {
         opts.push(
             ...folderData.actions.map((e, i) => {
                 return {
-                    text: e.name,
-                    icon: e.script_icon || "fa-bolt",
+                    text: folderHtml(e.name),
+                    icon: folderHtml(e.script_icon || "fa-bolt"),
                     action: (evt) => { evt.preventDefault(); folderCustomAction(id, i); } // evt for event
                 }
             })
@@ -1491,8 +1491,8 @@ const addDockerFolderContext = (id) => {
             icon: 'fa-bars',
             subMenu: folderData.actions.map((e, i) => {
                 return {
-                    text: e.name,
-                    icon: e.script_icon || "fa-bolt",
+                    text: folderHtml(e.name),
+                    icon: folderHtml(e.script_icon || "fa-bolt"),
                     action: (evt) => { evt.preventDefault(); folderCustomAction(id, i); }
                 }
             })

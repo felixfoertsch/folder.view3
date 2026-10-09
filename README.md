@@ -36,6 +36,10 @@ To roll back, export any changed Folder View 3 settings, uninstall it, reinstall
 - Add a runnable regression check for statistics parsing and folder totals.
 - Separate Folder View 3's plugin paths while retaining Folder View 2 configuration and Docker-label compatibility.
 - Build and publish installable plugin manifests and packages automatically.
+- Compact two-column editor with settings left and order/assignment right; stack on narrow screens.
+- Correct dashboard restart, VM custom actions, and newly added folder refreshes.
+- Validate configuration inputs, protect concurrent saves, and escape folder HTML.
+- Bound and cache Tailscale lookups; fix JSON export downloads.
 
 ## Build and test
 
@@ -43,6 +47,8 @@ Install the pinned toolchain with `mise install`. Run:
 
 ```fish
 mise exec -- node tests/docker-load.cjs
+mise exec -- node tests/folder-editor.cjs
+mise exec -- node tests/folder-actions.cjs
 mise exec -- bash scripts/build.sh 2026.10.09.1
 ```
 
