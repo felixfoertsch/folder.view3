@@ -69,7 +69,7 @@ Markdown="false"
         </div>
         <div class="basic" constraint="docker">
             <dl>
-                <dt data-i18n="update-column">Hide update column:</dt>
+                <dt data-i18n="update-column">Update column hidden:</dt>
                 <dd>
                     <input class="basic-switch" name="update_column" type="checkbox" style="display: none;" />
                 </dd>
@@ -82,7 +82,7 @@ Markdown="false"
         </div>
         <div class="basic">
             <dl>
-                <dt data-i18n="override-default-actions">Override default actions:</dt>
+                <dt data-i18n="override-default-actions">Custom actions only:</dt>
                 <dd>
                     <input class="basic-switch" name="override_default_actions" type="checkbox" style="display: none;" />
                 </dd>
@@ -95,7 +95,7 @@ Markdown="false"
         </div>
         <div class="basic">
             <dl>
-                <dt data-i18n="default-action">Hide default action button:</dt>
+                <dt data-i18n="default-action">Default action buttons hidden:</dt>
                 <dd>
                     <input class="basic-switch" name="default_action" type="checkbox" style="display: none;" />
                 </dd>
@@ -108,7 +108,7 @@ Markdown="false"
         </div>
         <div class="basic">
             <dl>
-                <dt data-i18n="expand-tab">Expanded on Docker/VM tab:</dt>
+                <dt data-i18n="expand-tab">Initially expanded on Docker/VM tab:</dt>
                 <dd>
                     <input class="basic-switch" name="expand_tab" type="checkbox" style="display: none;" />
                 </dd>
@@ -121,7 +121,7 @@ Markdown="false"
         </div>
         <div class="basic">
             <dl>
-                <dt data-i18n="expand-dashboard">Expanded on Dashboard tab:</dt>
+                <dt data-i18n="expand-dashboard">Initially expanded on Dashboard:</dt>
                 <dd>
                     <input class="basic-switch" name="expand_dashboard" type="checkbox" style="display: none;" />
                 </dd>
@@ -206,7 +206,7 @@ Markdown="false"
             <li constraint="preview-1 preview-2 preview-3 preview-4">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="preview-hover">Show preview only on hover:</dt>
+                        <dt data-i18n="preview-hover">Preview on hover only:</dt>
                         <dd>
                             <input class="basic-switch" name="preview_hover" type="checkbox" style="display: none;" />
                         </dd>
@@ -221,7 +221,7 @@ Markdown="false"
             <li constraint="preview-1 preview-3 preview-4 docker">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="preview-update">Orange text on update:</dt>
+                        <dt data-i18n="preview-update">Update highlight:</dt>
                         <dd>
                             <input class="basic-switch" name="preview_update" type="checkbox" style="display: none;" checked />
                         </dd>
@@ -251,7 +251,7 @@ Markdown="false"
             <li constraint="preview-1 preview-2">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="preview-grayscale">Preview icon grayscale:</dt>
+                        <dt data-i18n="preview-grayscale">Grayscale icons:</dt>
                         <dd>
                             <input class="basic-switch" name="preview_grayscale" type="checkbox" style="display: none;" />
                         </dd>
@@ -270,7 +270,7 @@ Markdown="false"
             <li constraint="preview-1 preview-2 preview-3 preview-4 docker">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="preview-webui">Add WebUI icon:</dt>
+                        <dt data-i18n="preview-webui">WebUI icon:</dt>
                         <dd>
                             <input class="basic-switch" name="preview_webui" type="checkbox" style="display: none;" />
                         </dd>
@@ -285,7 +285,7 @@ Markdown="false"
             <li constraint="preview-1 preview-2 preview-3 preview-4">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="preview-logs">Add Logs icon:</dt>
+                        <dt data-i18n="preview-logs">Logs icon:</dt>
                         <dd>
                             <input class="basic-switch" name="preview_logs" type="checkbox" style="display: none;" />
                         </dd>
@@ -300,7 +300,7 @@ Markdown="false"
             <li constraint="preview-1 preview-2 preview-3 preview-4 docker">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="preview-console">Add Console icon:</dt>
+                        <dt data-i18n="preview-console">Console icon:</dt>
                         <dd>
                             <input class="basic-switch" name="preview_console" type="checkbox" style="display: none;" />
                         </dd>
@@ -322,7 +322,7 @@ Markdown="false"
             <div constraint="preview-1 preview-2 preview-3 preview-4">
                 <div class="basic">
                     <dl>
-                        <dt data-i18n="preview-vertical-bars">Preview vertical bars:</dt>
+                        <dt data-i18n="preview-vertical-bars">Vertical bars:</dt>
                         <dd>
                             <input class="basic-switch" name="preview_vertical_bars" type="checkbox" style="display: none;" onchange="updateForm()" />
                         </dd>
@@ -345,7 +345,7 @@ Markdown="false"
         </div>
         <div class="basic">
             <dl>
-                <dt data-i18n="border">Show preview border:</dt>
+                <dt data-i18n="border">Preview border:</dt>
                 <dd>
                     <input class="basic-switch" checked name="preview_border" type="checkbox" style="display: none;" onchange="updateForm()" />
                 </dd>

@@ -49,9 +49,9 @@ for (const name of ['preview_webui', 'preview_logs', 'preview_console']) {
 assert.ok(page.includes('name="preview_vertical_bars_color"'));
 assert.ok(fs.readFileSync(root + 'scripts/folder.js', 'utf8').includes("$('[constraint=\"bars-color\"]').toggle(form.preview_vertical_bars.checked)"));
 for (const file of ['docker', 'vm']) assert.ok(fs.readFileSync(root + `scripts/${file}.js`, 'utf8').includes('folder.settings.preview_vertical_bars_color || folder.settings.preview_border_color'));
-assert.ok(fs.readFileSync(root + 'styles/folder.css', 'utf8').includes('.folder-settings ul { list-style: none; }'));
+assert.ok(fs.readFileSync(root + 'styles/folder.css', 'utf8').includes('.folder-settings ul { list-style: none; padding-left: 0; }'));
 assert.ok(page.indexOf('class="folder-popup-settings"') > page.indexOf('name="preview_border_color"'));
-for (const text of ['Add WebUI icon:', 'Add Logs icon:', 'Add Console icon:']) assert.ok(page.includes(text));
+for (const text of ['WebUI icon:', 'Logs icon:', 'Console icon:', 'Preview border:', 'Update column hidden:', 'Default action buttons hidden:']) assert.ok(page.includes(text));
 const css = fs.readFileSync(root + 'styles/folder.css', 'utf8');
 assert.ok(css.includes('flex-direction: row; align-items: center; flex-wrap: nowrap'));
 assert.ok(!css.includes('border-block: 1px') && !css.includes('border-top: 1px'));

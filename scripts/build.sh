@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(values)) {
 	if ([...plugin.matchAll(pattern)].length !== 1) throw new Error(`Expected one ${key} entity`);
 	plugin = plugin.replace(pattern, `<!ENTITY ${key} "${value}">`);
 }
-plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Default new-folder shortcut icons to off; preserve existing choices.\n- Add independent vertical bars color, shown only when enabled, with legacy color fallback.\n- Remove settings bullets while retaining groups.`);
+plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Align preview controls in one column, indent grouped labels beneath headings.\n- Shorten boolean labels while preserving existing setting meanings.`);
 fs.writeFileSync(output, plugin);
 NODE
 	printf 'Built %s\n' "$output"

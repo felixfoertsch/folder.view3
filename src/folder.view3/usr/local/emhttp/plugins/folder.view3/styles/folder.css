@@ -20,7 +20,10 @@
 }
 .folder-editor input[type="text"], .folder-editor select { max-width: 100%; box-sizing: border-box; }
 .folder-editor ul { padding-left: 1rem; }
-.folder-settings ul { list-style: none; }
+.folder-editor .folder-settings ul { list-style: none; padding-left: 0; }
+.folder-settings { --folder-control-column: max(8rem, 40%); }
+.folder-settings dl { grid-template-columns: var(--folder-control-column) minmax(0, 1fr); }
+.folder-shortcuts dt, .folder-borders dt, .folder-popup-settings ul dt { padding-left: 1rem; }
 .folder-editor .inline_help { margin: .5rem 0; }
 .folder-shortcuts { list-style: none; padding-block: .5rem; margin-block: .75rem; }
 .folder-shortcuts h3, .folder-borders h3 { margin: 0 0 .5rem; }
