@@ -38,6 +38,16 @@
 .folder-editor table.sortable th:last-child { width: 6rem; }
 .folder-editor table.sortable td { overflow-wrap: anywhere; padding: .35rem .5rem; }
 .folder-form-actions { grid-column: 1 / -1; }
+.folder-editor .folder-icon-picker { display: grid; grid-template-columns: repeat(auto-fit, 44px); gap: .5rem; }
+.folder-editor .folder-icon-picker button { width: 44px; height: 44px; min-width: 0; margin: 0; padding: 0; color: inherit; background: transparent; border: 2px solid transparent; border-radius: 4px; }
+.folder-icon-picker button .fa { font-size: 24px; }
+.folder-editor .folder-icon-picker .folder-icon-custom-choice { width: auto; grid-column: span 2; }
+.folder-icon-custom-choice span { display: block; font-size: 10px; line-height: 12px; }
+.folder-editor .folder-icon-picker button[aria-pressed="true"] { border-color: #ff8c2f; }
+.folder-icon-picker button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.folder-editor .folder-custom-icon:not([hidden]) { display: flex; flex-direction: row; align-items: center; gap: .5rem; margin-top: .5rem; }
+.folder-custom-icon input { width: 100%; min-width: 0; }
+.folder-custom-icon span { flex: 0 0 32px; }
 
 .item {
 	height: 3em;

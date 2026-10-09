@@ -14,6 +14,31 @@ const rgbToHex = (rgb) => {
     return "#" + (1 << 24 | rgb[0] << 16 | rgb[1] << 8 | rgb[2]).toString(16).slice(1);
 }
 
+const iconPicker = document.getElementById('folder-icon-picker');
+for (const preset of [...folderIconPresets, 'custom']) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.dataset.icon = preset === 'custom' ? '' : `fa:${preset}`;
+    const label = $.i18n(`icon-${preset}`);
+    button.title = label;
+    button.setAttribute('aria-label', label);
+    button.innerHTML = `<i class="fa fa-${preset === 'custom' ? 'link' : preset}" aria-hidden="true"></i>`;
+    if (preset === 'custom') {
+        button.classList.add('folder-icon-custom-choice');
+        const caption = document.createElement('span');
+        caption.textContent = label;
+        button.append(caption);
+    }
+    button.addEventListener('click', () => {
+        const input = document.querySelector('form.folder-editor').elements.icon;
+        if (preset === 'custom') input.value = iconPicker.dataset.customIcon || '';
+        else input.value = button.dataset.icon;
+        updateIcon(input);
+        if (preset === 'custom') input.focus();
+    });
+    iconPicker.append(button);
+}
+
 $('div.canvas > form')[0].preview_border_color.value = rgbToHex($('body').css('color'));
 $('div.canvas > form')[0].preview_vertical_bars_color.value = rgbToHex($('body').css('color'));
 
@@ -123,6 +148,9 @@ $('div.canvas > form')[0].preview_vertical_bars_color.value = rgbToHex($('body')
     }
 
     updateList();
+    const iconInput = document.querySelector('form.folder-editor').elements.icon;
+    if (!folderId) iconInput.value = 'fa:folder';
+    updateIcon(iconInput);
     updateFolderPreview();
 })();
 
@@ -131,7 +159,14 @@ $('div.canvas > form')[0].preview_vertical_bars_color.value = rgbToHex($('body')
  * @param {*} e the element
  */
 const updateIcon = (e) => {
-    e.previousElementSibling.src = e.value;
+    const isCustom = !folderIconPresets.some(preset => e.value === `fa:${preset}`);
+    const custom = document.getElementById('folder-custom-icon');
+    custom.hidden = !isCustom;
+    if (isCustom) iconPicker.dataset.customIcon = e.value;
+    for (const button of iconPicker.children) {
+        button.setAttribute('aria-pressed', String(button.dataset.icon ? button.dataset.icon === e.value : isCustom));
+    }
+    document.getElementById('folder-icon-image').innerHTML = folderIconHtml(e.value);
     updateFolderPreview();
 };
 

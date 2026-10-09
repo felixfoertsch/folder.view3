@@ -78,7 +78,7 @@
         }
         $icon = $folder['icon'];
         if (preg_match('/[\x00-\x20\x7f\x22\x27<>`\\\\]/', $icon) ||
-            ($icon !== '' && !preg_match('~^(?:https?://[^/]+(?:/.*)?|/(?!/).*|data:image/(?:png|jpeg|gif|webp);base64,[a-zA-Z0-9+/]+=*)$~Di', $icon))) {
+            ($icon !== '' && !preg_match('~^fa:(?:folder|film|music|picture-o|download|globe|shield|archive|hdd-o|database|code|wrench|bar-chart|home|gamepad|cloud)$~D', $icon) && !preg_match('~^(?:https?://[^/]+(?:/.*)?|/(?!/).*|data:image/(?:png|jpeg|gif|webp);base64,[a-zA-Z0-9+/]+=*)$~Di', $icon))) {
             throw new InvalidArgumentException('Invalid folder icon');
         }
         // Reject markup in every persisted string, including optional and future fields.

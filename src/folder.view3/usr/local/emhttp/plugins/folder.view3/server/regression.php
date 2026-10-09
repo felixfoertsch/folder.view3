@@ -35,6 +35,12 @@ try {
         $bad = $folder; $bad['icon'] = $icon;
         refuses(function () use ($bad) { validateFolder($bad); });
     }
+    foreach (['fa:folder', 'fa:database', 'fa:cloud'] as $icon) {
+        $preset = $folder; $preset['icon'] = $icon;
+        validateFolder($preset);
+    }
+    $bad = $folder; $bad['icon'] = 'fa:unknown';
+    refuses(function () use ($bad) { validateFolder($bad); });
     $bad = $folder; $bad['actions'] = [['name' => '<img src=x>', 'type' => 1, 'script_args' => 'ok']];
     refuses(function () use ($bad) { validateFolder($bad); });
     $folder['settings']['preview_vertical_bars_color'] = '#123456';

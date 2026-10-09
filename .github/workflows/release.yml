@@ -30,6 +30,7 @@ jobs:
           mise exec -- node tests/folder-actions.cjs
           mise exec -- node tests/folder-export.cjs
           mise exec -- node tests/folder-preview.cjs
+          mise exec -- node tests/folder-icons.cjs
       - name: Check storage and cache boundaries
         run: php src/folder.view3/usr/local/emhttp/plugins/folder.view3/server/regression.php
       - name: Build plugin
