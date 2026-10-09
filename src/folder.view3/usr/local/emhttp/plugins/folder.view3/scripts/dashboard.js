@@ -92,7 +92,7 @@ const createFolders = async () => {
     
         // Expand folders that are set to be expanded by default, this is here because is easier to work with all compressed folder when creating them
         for (const [id, value] of Object.entries(foldersDone)) {
-            if ((globalFolders.docker && globalFolders.docker[id].status.expanded) || value.settings.expand_dashboard) {
+            if ((globalFolders.docker?.[id]?.status?.expanded) || value.settings.expand_dashboard) {
                 value.status.expanded = true;
                 expandFolderDocker(id);
             }
@@ -198,7 +198,7 @@ const createFolders = async () => {
 
         // Expand folders that are set to be expanded by default, this is here because is easier to work with all compressed folder when creating them
         for (const [id, value] of Object.entries(foldersDone)) {
-            if ((globalFolders.vms && globalFolders.vms[id].status.expanded) || value.settings.expand_dashboard) {
+            if ((globalFolders.vms?.[id]?.status?.expanded) || value.settings.expand_dashboard) {
                 value.status.expanded = true;
                 expandFolderVM(id);
             }
@@ -254,7 +254,7 @@ const createFolderDocker = (folder, id, position, order, containersInfo, folders
     folder.containers = folder.containers.concat(order.filter(el => (containersInfo[el]?.Labels?.['folder.view3'] ?? containersInfo[el]?.Labels?.['folder.view2']) === folder.name));
 
     // the HTML template for the folder
-    const fld = `<div class="folder-showcase-outer-${id} folder-showcase-outer"><span class="outer solid apps stopped folder-docker"><span id="folder-id-${id}" onclick='addDockerFolderContext("${id}")' class="hand docker folder-hand-docker"><img src="${folder.icon}" class="img folder-img-docker" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span><span class="inner folder-inner-docker"><span class="folder-appname-docker">${folder.name}</span><br><i class="fa fa-square stopped red-text folder-load-status-docker"></i><span class="state folder-state-docker">${$.i18n('stopped')}</span></span><div class="folder-storage"></div></span><div class="folder-showcase-${id} folder-showcase"></div></div>`;
+    const fld = `<div class="folder-showcase-outer-${id} folder-showcase-outer"><span class="outer solid apps stopped folder-docker"><span id="folder-id-${id}" onclick='addDockerFolderContext("${id}")' class="hand docker folder-hand-docker"><img src="${folderHtml(folder.icon)}" class="img folder-img-docker" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span><span class="inner folder-inner-docker"><span class="folder-appname-docker">${folderHtml(folder.name)}</span><br><i class="fa fa-square stopped red-text folder-load-status-docker"></i><span class="state folder-state-docker">${$.i18n('stopped')}</span></span><div class="folder-storage"></div></span><div class="folder-showcase-${id} folder-showcase"></div></div>`;
 
     // insertion at position of the folder
     if (position === 0) {
@@ -442,7 +442,7 @@ const createFolderVM = (folder, id, position, order, vmInfo, foldersDone) => {
     }
 
     // the HTML template for the folder
-    const fld = `<div class="folder-showcase-outer-${id} folder-showcase-outer"><span class="outer solid vms stopped folder-vm"><span id="folder-id-${id}" onclick='addVMFolderContext("${id}")' class="hand vm folder-hand-vm"><img src="${folder.icon}" class="img" onerror='this.src="/plugins/dynamix.docker.manager/images/question.png"'></span><span class="inner folder-inner-vm">${folder.name}<br><i class="fa fa-square stopped red-text folder-load-status-vm"></i><span class="state folder-state-vm">${$.i18n('stopped')}</span></span><div class="folder-storage" style="display:none"></div></span><div class="folder-showcase-${id} folder-showcase"></div></div>`;
+    const fld = `<div class="folder-showcase-outer-${id} folder-showcase-outer"><span class="outer solid vms stopped folder-vm"><span id="folder-id-${id}" onclick='addVMFolderContext("${id}")' class="hand vm folder-hand-vm"><img src="${folderHtml(folder.icon)}" class="img" onerror='this.src="/plugins/dynamix.docker.manager/images/question.png"'></span><span class="inner folder-inner-vm">${folderHtml(folder.name)}<br><i class="fa fa-square stopped red-text folder-load-status-vm"></i><span class="state folder-state-vm">${$.i18n('stopped')}</span></span><div class="folder-storage" style="display:none"></div></span><div class="folder-showcase-${id} folder-showcase"></div></div>`;
 
     // insertion at position of the folder
     if (position === 0) {
@@ -587,7 +587,7 @@ const expandFolderDocker = (id) => {
         el.attr('expanded', 'true');
     }
     $(`tbody#docker_view .folder-showcase-outer-${id}`).attr('expanded', !state ? 'true' : 'false');
-    if(globalFolders.docker) {
+    if(globalFolders.docker?.[id]?.status) {
         globalFolders.docker[id].status.expanded = !state;
     }
     folderEvents.dispatchEvent(new CustomEvent('docker-post-folder-expansion', {detail: { id }}));
@@ -609,7 +609,7 @@ const expandFolderVM = (id) => {
         el.attr('expanded', 'true');
     }
     $(`tbody#vm_view .folder-showcase-outer-${id}`).attr('expanded', !state ? 'true' : 'false');
-    if(globalFolders.vms) {
+    if(globalFolders.vms?.[id]?.status) {
         globalFolders.vms[id].status.expanded = !state;
     }
     folderEvents.dispatchEvent(new CustomEvent('vm-post-folder-expansion', {detail: { id }}));
@@ -807,7 +807,7 @@ const addDockerFolderContext = (id) => {
                 return {
                     text: e.name,
                     icon: e.script_icon || "fa-bolt",
-                    action: (e) => { e.preventDefault(); folderCustomAction(id, i); }
+                    action: (e) => { e.preventDefault(); folderDockerCustomAction(id, i); }
                 }
             })
         );
@@ -955,7 +955,7 @@ const actionFolderDocker = async (id, action) => {
             case "resume":
                 pass = ct.state && ct.pause;
                 break;
-            case "resume":
+            case "restart":
                 pass = true;
                 break;
             default:
@@ -1004,7 +1004,7 @@ const folderVMCustomAction = async (id, action) => {
             if(act.modes === 0) {
                 ctAction = (e) => {
                     if(e.state === "running") {
-                        prom.push($.post(eventURL, {action: 'stop', uuid:e.id}, null,'json').promise());
+                        prom.push($.post(eventURL, {action: 'domain-stop', uuid:e.id}, null,'json').promise());
                     } else if(e.state !== "running" && e.state !== "pmsuspended" && e.state !== "paused" && e.state !== "unknown"){
                         prom.push($.post(eventURL, {action: 'domain-start', uuid:e.id}, null,'json').promise());
                     }
@@ -1013,8 +1013,8 @@ const folderVMCustomAction = async (id, action) => {
                 ctAction = (e) => {
                     if(e.state === "running") {
                         prom.push($.post(eventURL, {action: 'domain-pause', uuid:e.id}, null,'json').promise());
-                    } else if(e.state === "paused" || e.state === "unknown") {
-                        prom.push($.post(eventURL, {action: 'domain-resume', uuid:e.id}, null,'json').promise());
+                    } else if(e.state === "paused" || e.state === "unknown" || e.state === "pmsuspended") {
+                        prom.push($.post(eventURL, {action: e.state === 'pmsuspended' ? 'domain-pmwakeup' : 'domain-resume', uuid:e.id}, null,'json').promise());
                     }
                 };
             }
@@ -1041,8 +1041,8 @@ const folderVMCustomAction = async (id, action) => {
                 };
             } else if(act.modes === 3) {
                 ctAction = (e) => {
-                    if(e.state === "paused" || e.state === "unknown") {
-                        prom.push($.post(eventURL, {action: 'domain-restart', uuid:e.id}, null,'json').promise());
+                    if(e.state === "paused" || e.state === "unknown" || e.state === "pmsuspended") {
+                        prom.push($.post(eventURL, {action: e.state === 'pmsuspended' ? 'domain-pmwakeup' : 'domain-resume', uuid:e.id}, null,'json').promise());
                     }
                 };
             }
@@ -1051,7 +1051,7 @@ const folderVMCustomAction = async (id, action) => {
 
             ctAction = (e) => {
                 if(e.state === "running") {
-                    prom.push($.post(eventURL, {action: 'domain-pause', uuid:e.id}, null,'json').promise());
+                    prom.push($.post(eventURL, {action: 'domain-restart', uuid:e.id}, null,'json').promise());
                 }
             };
 
@@ -1112,7 +1112,7 @@ const addVMFolderContext = (id) => {
                 return {
                     text: e.name,
                     icon: e.script_icon || "fa-bolt",
-                    action: (e) => { e.preventDefault(); folderCustomAction(id, i); }
+                    action: (e) => { e.preventDefault(); folderVMCustomAction(id, i); }
                 }
             })
         );
