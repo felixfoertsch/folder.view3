@@ -96,7 +96,7 @@
         foreach ($folder['settings'] as $key => $value) {
             if (in_array($key, ['preview', 'context', 'context_trigger', 'context_graph', 'context_graph_time'], true)) {
                 if (!is_int($value) || $value < 0 || $value > ($key === 'context_graph_time' ? 86400 : 4)) throw new InvalidArgumentException('Invalid folder setting');
-            } elseif ($key === 'preview_border_color') {
+            } elseif (in_array($key, ['preview_border_color', 'preview_vertical_bars_color'], true)) {
                 if (!is_string($value) || !preg_match('/^#[a-fA-F0-9]{6}$/D', $value)) throw new InvalidArgumentException('Invalid border color');
             } elseif ($key === 'preview_text_width') {
                 if (!is_string($value) || !preg_match('/^(?:[0-9]+(?:\.[0-9]+)?(?:px|em|rem|%|vw)?)?$/D', $value)) throw new InvalidArgumentException('Invalid preview width');

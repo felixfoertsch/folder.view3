@@ -37,6 +37,10 @@ try {
     }
     $bad = $folder; $bad['actions'] = [['name' => '<img src=x>', 'type' => 1, 'script_args' => 'ok']];
     refuses(function () use ($bad) { validateFolder($bad); });
+    $folder['settings']['preview_vertical_bars_color'] = '#123456';
+    validateFolder($folder);
+    $bad = $folder; $bad['settings']['preview_vertical_bars_color'] = 'red;display:none';
+    refuses(function () use ($bad) { validateFolder($bad); });
     updateFolder('docker', json_encode($folder), 'Test');
     deleteFolder('docker', 'Test');
     check(readFolder('docker') === '{}', 'Empty object after delete');

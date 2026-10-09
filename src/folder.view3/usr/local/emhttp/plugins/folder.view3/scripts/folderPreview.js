@@ -95,7 +95,7 @@ const updateFolderPreview = () => {
 		if (settings.preview_vertical_bars) {
 			const divider = document.createElement('div');
 			divider.className = 'folder-preview-divider';
-			divider.style.borderColor = settings.preview_border_color;
+			divider.style.borderColor = settings.preview_vertical_bars_color || settings.preview_border_color;
 			preview.append(divider);
 		}
 	}

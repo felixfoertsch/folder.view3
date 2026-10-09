@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(values)) {
 	if ([...plugin.matchAll(pattern)].length !== 1) throw new Error(`Expected one ${key} entity`);
 	plugin = plugin.replace(pattern, `<!ENTITY ${key} "${value}">`);
 }
-plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Remove internal preview section lines while retaining control groups.\n- Shorten icon labels and move Popup Configuration to the bottom.\n- Keep Reset to default inline with the color picker.`);
+plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Default new-folder shortcut icons to off; preserve existing choices.\n- Add independent vertical bars color, shown only when enabled, with legacy color fallback.\n- Remove settings bullets while retaining groups.`);
 fs.writeFileSync(output, plugin);
 NODE
 	printf 'Built %s\n' "$output"
