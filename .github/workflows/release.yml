@@ -1,0 +1,47 @@
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - name: Check workflow
+        run: mise exec -- actionlint .github/workflows/release.yml
+      - name: Check Docker load and migration compatibility
+        run: mise exec -- node tests/docker-load.cjs
+      - name: Build plugin
+        run: |
+          version="$(date -u +%Y.%m.%d).${GITHUB_RUN_NUMBER}"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+          mise exec -- bash scripts/build.sh "$version"
+          tar -tJf "dist/$version/folder.view3-$version.txz" > /dev/null
+      - uses: actions/upload-artifact@v4
+        with:
+          name: folder.view3-${{ env.VERSION }}
+          path: dist/${{ env.VERSION }}/
+      - name: Publish release
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$VERSION" \
+            "dist/$VERSION/folder.view3.plg" \
+            "dist/$VERSION/folder.view3-$VERSION.txz" \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Folder View 3 $VERSION" --generate-notes --latest

@@ -1,67 +1,63 @@
-# FolderView2 For Unraid 7
+# Folder View 3 for Unraid 7
 
-## What is FolderView2?
+Group Docker containers and VMs into folders on Unraid's Docker, VM, and Dashboard pages. Folder View 3 forks [VladoPortos/folder.view2](https://github.com/VladoPortos/folder.view2), originally created by [scolcipitato](https://github.com/scolcipitato/folder.view).
 
-Original creator: [**scolcipitato**](https://github.com/scolcipitato/folder.view)
+## Install
 
-FolderView2 lets you create folders for grouping Dockers and VMs together to help with organization. Especially useful if you're using docker-compose.
-Getting Started: A new button named "Add Folder" will appear at the bottom of the docker/VM tab next to "Add Container/VM".
+In **Plugins → Install Plugin**, paste:
 
-## Installation
-
-Manual for now, need to figure out how to submit to Unraid app store.
-
-### Backup
-If you already have this plugins older version setup go to Plugins -> FolderView and "Export All" your current settings!
-
-However if you arelady can't access FolderView go to Settings via UI, go to:
-
-`config\plugins\folder.view\` and backup: `docker.json` and `vm.json` 
-
-```bash
-root@PlexServer:/boot/config/plugins/folder.view# pwd
-/boot/config/plugins/folder.view
-root@PlexServer:/boot/config/plugins/folder.view# ls
-docker.json  folder.view2-2025.02.26.txz  scripts/  styles/  version  vm.json
-root@PlexServer:/boot/config/plugins/folder.view# 
+```text
+https://github.com/felixfoertsch/folder.view3/releases/latest/download/folder.view3.plg
 ```
 
-### Easy Manual installation
+Alternatively, download `folder.view3.plg` from [Releases](https://github.com/felixfoertsch/folder.view3/releases/latest), copy it to `/boot/config/plugins/`, and select it in **Install Plugin**. Each release also includes the matching `.txz` package; the `.plg` downloads and verifies that package automatically.
 
-Use link: https://raw.githubusercontent.com/VladoPortos/folder.view2/refs/heads/main/folder.view2.plg
+Release links become available after the first successful release workflow. The checked-in `.plg` is a build template, not an installable release.
 
-That link can be posted directly into the plugin install without needing to copy it to the filesystem beforehand.
+## Migrate from Folder View 2
 
-[![Install FolderView2](img/plugin_install.png)]
+Folder View 3 uses its own plugin and configuration paths. **Do not keep both plugins installed: both modify the same Unraid pages.**
 
+1. In Folder View 2's settings, use **Export all** separately for Docker and VMs. Keep both JSON files outside the server.
+2. Before uninstalling, copy `/boot/config/plugins/folder.view2/` to a safe backup location. This also preserves custom scripts and styles. If settings cannot open, back up `docker.json` and `vm.json` directly; they use the same format as Export all.
+3. Uninstall Folder View 2 through **Plugins**, then install Folder View 3 using the URL above.
+4. Open Folder View 3's settings. Import the Docker JSON under **Docker** and VM JSON under **VMs**. Import into a fresh configuration; existing matching folder IDs are overwritten.
+5. If used, copy backed-up `scripts/` and `styles/` into `/boot/config/plugins/folder.view3/`. Update custom code referencing `/plugins/folder.view2/` or `/boot/config/plugins/folder.view2/` to the corresponding `folder.view3` paths.
+6. Hard-refresh the Docker, VM, and Dashboard pages. Verify folder membership, ordering, and custom actions before discarding backups.
 
-### Manual installation
-1. Copy the `folder.view2.plg` file to `/boot/config/plugins/` folder.
-2. Copy the latest 'folder.view2-<date>.txz' from archive folder to `/boot/config/plugins/folder.view2/` folder.
-3. In Unraid webui go to Plugins -> Install Plugin tab, click on the folder `config` -> `plugins` -> `folder.view2.plg` and press install button.
+Folder IDs and JSON structure stay unchanged, preserving existing order entries. Existing `folder.view2` Docker labels still work; use `folder.view3` for new labels. When both labels exist, `folder.view3` takes precedence. No containers or VMs need recreation.
 
-## Support & Feedback
-If you have any questions or issues, please file an issue on [GitHub](https://github.com/VladoPortos/folder.view2/issues).
+To roll back, export any changed Folder View 3 settings, uninstall it, reinstall Folder View 2, and restore the original backup. Folder View 3 does not automatically delete or migrate Folder View 2 data.
 
-## Contributors
-- [TurboStreetCar](https://github.com/TurboStreetCar) - Contributed improved folder.js implementation for compatibility with Unraid 7 and older versions
+## Fork contributions
 
----
+- Correct Docker statistics handling for Unraid's `NchanSubscriber`, which passes a message string rather than a browser event object.
+- Ignore empty and incomplete statistics rows, including the trailing newline produced by `docker stats`.
+- Add a runnable regression check for statistics parsing and folder totals.
+- Separate Folder View 3's plugin paths while retaining Folder View 2 configuration and Docker-label compatibility.
+- Build and publish installable plugin manifests and packages automatically.
 
-## ☕ Buy Me a Coffee (or a Beer!)
+## Build and test
 
-If you like this project and want to support my caffeine-fueled coding sessions, you can buy me a coffee (or a beer, I won't judge! 🍻) on Ko-fi:
+Install the pinned toolchain with `mise install`. Run:
 
-[![Support me on Ko-fi](img/support_me_on_kofi_badge_red.png)](https://ko-fi.com/vladoportos)
+```fish
+mise exec -- node tests/docker-load.cjs
+mise exec -- bash scripts/build.sh 2026.10.09.1
+```
 
-Every donation helps to proofe to my wife that I'm not a complete idiot :D
+Build output lives in `dist/<version>/`. The build computes the package MD5 and writes a matching `.plg` without changing source files. Versions use `YYYY.MM.DD` with a numeric suffix.
 
----
+GitHub Actions checks and builds pull requests. Pushes to `main` and manual workflow runs on `main` also publish a release, using the UTC date and workflow run number. Unraid's plugin update URL follows the latest published release.
 
-### Libraries used in this project:
-- [Chart.js](https://www.chartjs.org/)
-- [chartjs-adapter-moment](https://github.com/chartjs/chartjs-adapter-moment)
-- [Moment.js](https://momentjs.com/)
-- [chartjs-plugin-streaming](https://github.com/nagix/chartjs-plugin-streaming)
-- [jquery.i18n](https://github.com/wikimedia/jquery.i18n)
-- [jQuery UI MultiSelect](https://github.com/ehynds/jquery-ui-multiselect-widget)
+## Attribution and contributions
+
+- **scolcipitato** — original Folder View plugin.
+- **VladoPortos** — Folder View 2 maintenance and Unraid 7 support.
+- **TurboStreetCar** — improved `folder.js` compatibility for Unraid 7 and earlier versions.
+- **felixfoertsch** — Folder View 3 maintenance, statistics regression fix, migration path, and release automation.
+- Upstream contributors — translations, layout fixes, and features retained in this fork; see Git history and the plugin changelog.
+
+Report fork issues and submit contributions at [felixfoertsch/folder.view3](https://github.com/felixfoertsch/folder.view3/issues). Include Unraid version, plugin version, reproduction steps, and relevant errors. Remove secrets and private container configuration before sharing diagnostics.
+
+Bundled libraries: Chart.js, chartjs-adapter-moment, Moment.js, chartjs-plugin-streaming, jquery.i18n, and jQuery UI MultiSelect. Their existing notices remain in the source tree.
