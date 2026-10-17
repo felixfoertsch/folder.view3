@@ -41,12 +41,9 @@
 .folder-prefix-controls button { margin: 0; }
 .folder-editor .prefix-delete { padding: .25rem; min-width: 0; margin: 0 .5rem 0 0; color: inherit; background: transparent; }
 .folder-editor .prefix-delete:focus-visible { outline: 2px solid currentColor; }
-.prefix-bucket > td:last-child { white-space: nowrap; }
-.folder-editor .prefix-switch { appearance: none; display: inline-block; vertical-align: middle; width: 2.5rem; height: 1.25rem; margin: 0; border: 1px solid currentColor; border-radius: 1rem; background: transparent; cursor: pointer; }
-.prefix-switch::before { content: ''; display: block; width: .9rem; height: .9rem; margin: .1rem; border-radius: 50%; background: currentColor; }
-.prefix-switch:checked::before { transform: translateX(1.2rem); }
-.prefix-switch:checked { color: #ff8c2f; }
-.prefix-switch:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.prefix-bucket-controls { display: flex; align-items: center; }
+.prefix-bucket-controls .switch-button-background.checked { background-color: #ff8c2f; }
+.prefix-bucket-controls .switch-button-background:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .folder-editor table.sortable td { overflow-wrap: anywhere; padding: .35rem .5rem; }
 .folder-editor .prefix-member > td:first-child { padding-left: 2rem; }
 .prefix-member img { pointer-events: none; }

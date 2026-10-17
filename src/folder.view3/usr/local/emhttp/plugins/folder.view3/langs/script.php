@@ -22,8 +22,8 @@
     }).load({
         <?php
             if($loc != 'en') {
-                echo "'$loc': '/plugins/folder.view3/langs/$loc.json',";
+                echo "'$loc': '"; autov("/plugins/folder.view3/langs/$loc.json"); echo "',";
             }
-        ?>'en': '/plugins/folder.view3/langs/en.json'
+        ?>'en': '<?autov('/plugins/folder.view3/langs/en.json')?>'
     }).then(folderi18n, ()=>{});
 </script>

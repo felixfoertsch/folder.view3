@@ -274,7 +274,7 @@ const updateList = () => {
         const checked = selected.includes(el);
         if (el.Prefix) {
             const members = prefixMembers.filter(item => folderPrefixFor(item.Name, prefixes) === el.Name);
-            const row = $(`<tr class="item prefix-bucket" draggable="true"><td>${folderHtml(el.Name)} <small>(${members.length})</small></td><td><button type="button" class="prefix-delete" aria-label="${folderHtml($.i18n('prefix-delete', el.Name))}"><i class="fa fa-trash" aria-hidden="true"></i></button><input class="prefix-switch" role="switch" ${checked ? 'checked' : ''} data-prefix-bucket="true" type="checkbox" name="containers[]" value="${folderHtml(el.Name)}" aria-label="${folderHtml($.i18n('prefix-include', el.Name))}"></td></tr>`);
+            const row = $(`<tr class="item prefix-bucket" draggable="true"><td>${folderHtml(el.Name)} <small>(${members.length})</small></td><td><span class="prefix-bucket-controls"><button type="button" class="prefix-delete" aria-label="${folderHtml($.i18n('prefix-delete', el.Name))}"><i class="fa fa-trash" aria-hidden="true"></i></button><input class="container-switch prefix-switch" ${checked ? 'checked' : ''} data-prefix-bucket="true" type="checkbox" name="containers[]" value="${folderHtml(el.Name)}" aria-label="${folderHtml($.i18n('prefix-include', el.Name))}" style="display: none;"></span></td></tr>`);
             row.find('.prefix-delete').on('click', () => removePrefix(el.Name));
             row.find('input').on('change', function() {
                 const inputs = [...document.querySelectorAll('input[data-prefix-member]')].filter(input => input.dataset.prefixMember === el.Name);
@@ -296,8 +296,15 @@ const updateList = () => {
     }
 
     // create the *cool* unraid button for the autostart
-    $('table.sortable > tbody > tr > td > input.container-switch').switchButton({ show_labels: false });
-    $('table.sortable > tbody > tr > td > input.container-switch:disabled').parent().find('*').css('opacity', '0.5').css('cursor', 'default').off().end().end().each(function() { this.checked = !this.checked; });
+    $('table.sortable input.container-switch').switchButton({ show_labels: false });
+    $('table.sortable input.container-switch:disabled').parent().find('*').css('opacity', '0.5').css('cursor', 'default').off().end().end().each(function() { this.checked = !this.checked; });
+    $('.prefix-bucket-controls .switch-button-background').attr({ role: 'switch', tabindex: '0' }).each(function() {
+        const input = $(this).siblings('input')[0];
+        $(this).attr({ 'aria-label': input.getAttribute('aria-label'), 'aria-checked': String(input.checked) });
+        $(input).on('change', () => $(this).attr('aria-checked', String(input.checked)));
+    }).on('keydown', function(event) {
+        if (event.key === ' ' || event.key === 'Enter') { event.preventDefault(); $(this).trigger('click'); }
+    });
 
     // stuff for the sort table
     $('.item').css('border-color', $('body').css('color'));

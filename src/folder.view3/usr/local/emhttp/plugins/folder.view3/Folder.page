@@ -493,7 +493,7 @@ Markdown="false"
             <input id="folder-prefix" type="text" placeholder="coder*" aria-describedby="folder-prefix-help" oninput="this.setCustomValidity('')" onkeydown="if (event.key === 'Enter') { event.preventDefault(); addPrefix(); }">
             <button type="button" onclick="addPrefix()" data-i18n="prefix-add">Add prefix</button>
         </div>
-        <p id="folder-prefix-help" data-i18n="prefix-help">End with *. Matching names appear together and future matches join automatically. First added prefix owns overlapping matches. Removing a prefix returns its items to the list.</p>
+        <p id="folder-prefix-help" data-i18n="prefix-help">Enter gitea* to group all names starting with gitea. New matches join automatically.</p>
         </fieldset>
         </section>
         <div class="folder-form-actions">

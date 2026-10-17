@@ -48,8 +48,33 @@ for (const [file, name, boundary, result] of [
 	assert.deepEqual(plain(context.consumer({ ...folder, name: 'group', regex: 'coder' }, 'id', 0, [...names], info, [])), expected, file);
 	assert.ok(!context.consumer({ containers: [], prefixes: ['coder*'], name: 'group', regex: 'coder' }, 'id', 0, [...names], info, []).includes('coder'), file + ' disabled prefix overrides regex and labels');
 }
+// Native Docker rows may use a plain span instead of a managed-container link.
+const docker = fs.readFileSync(root + 'scripts/docker.js', 'utf8');
+const lookup = docker.slice(docker.indexOf('        let $containerTR ='), docker.indexOf('\n        if ($containerTR.length)', docker.indexOf('        let $containerTR =')));
+for (const linked of [false, true]) {
+	const row = { name: 'gitea-disposable-1', linked };
+	const result = { length: 0, hasClass: () => false };
+	const query = selector => {
+		if (selector === row) return { find: selector => ({ text: () => selector === 'td.ct-name .appname' || linked ? row.name : '' }) };
+		if (selector === '#docker_list > tr.sortable') return { filter: callback => ({ first: () => callback.call(row) ? row : result }) };
+		return result;
+	};
+	const dom = vm.createContext({ $: query, FOLDER_VIEW_DEBUG_MODE: false, container_name_in_folder: row.name });
+	vm.runInContext(lookup + '\nglobalThis.found = $containerTR;', dom);
+	assert.equal(dom.found, row, 'Match both linked and plain-text container names');
+}
 // Run editor state changes with only jQuery's rendering boundary doubled.
 const editor = fs.readFileSync(root + 'scripts/folder.js', 'utf8');
+const page = fs.readFileSync(root + 'Folder.page', 'utf8');
+const english = JSON.parse(fs.readFileSync(root + 'langs/en.json', 'utf8'));
+assert.ok(english['prefix-help'].includes('gitea*') && english['prefix-help'].length < 100);
+assert.ok(page.includes(english['prefix-help']), 'Help has readable HTML fallback');
+const languages = fs.readFileSync(root + 'langs/script.php', 'utf8');
+for (const locale of ['en', '$loc']) assert.ok(languages.includes(`autov("/plugins/folder.view3/langs/${locale}.json")`) || languages.includes(`autov('/plugins/folder.view3/langs/${locale}.json')`), 'Language URLs bypass stale cache');
+assert.ok(editor.includes("$('table.sortable input.container-switch').switchButton({ show_labels: false })"));
+const css = fs.readFileSync(root + 'styles/folder.css', 'utf8');
+assert.ok(css.includes('.prefix-bucket-controls .switch-button-background.checked { background-color: #ff8c2f; }'));
+assert.ok(!css.includes('.prefix-switch::before'), 'Prefix uses native switch shape, not custom imitation');
 let rendered = [];
 let rows = [];
 const regex = { value: '', setCustomValidity() {}, reportValidity() {} };
@@ -65,7 +90,7 @@ const query = selector => {
 		prepend(row) { rendered.unshift(row); },
 	};
 	if (selector === '[name="name"]') return [{ value: 'group' }];
-	const chain = { switchButton() { return this; }, parent() { return this; }, find() { return this; }, css() { return this; }, off() { return this; }, end() { return this; }, each() { return this; }, on() { return this; } };
+	const chain = { switchButton() { return this; }, parent() { return this; }, find() { return this; }, attr() { return this; }, css() { return this; }, off() { return this; }, end() { return this; }, each() { return this; }, on() { return this; } };
 	return chain;
 };
 query.i18n = key => key;
