@@ -29,6 +29,12 @@ Folder IDs and JSON structure stay unchanged, preserving existing order entries.
 
 To roll back, export any changed Folder View 3 settings, uninstall it, reinstall Folder View 2, and restore the original backup. Folder View 3 does not automatically delete or migrate Folder View 2 data.
 
+## Prefix buckets
+
+At the bottom of a folder's **Order** box, enter `coder*` or `gitea-disposable-*` and select **Add prefix**. Matching names move under that bucket; new matches join automatically when the page refreshes. Matching is case-sensitive and literal except for the final `*`; `coder*` includes both `coder` and `coder-123`.
+
+Drag a bucket to set its position. Its **Included** switch controls all members, including matches from regex or Docker labels. The bin beside that switch removes only the prefix rule and returns its items to the order list. If prefixes overlap, the first added prefix owns matching items. Existing folder precedence still applies when assignments across folders overlap.
+
 ## Fork contributions
 
 - Correct Docker statistics handling for Unraid's `NchanSubscriber`, which passes a message string rather than a browser event object.
@@ -48,6 +54,7 @@ Install the pinned toolchain with `mise install`. Run:
 ```fish
 mise exec -- node tests/docker-load.cjs
 mise exec -- node tests/folder-editor.cjs
+mise exec -- node tests/folder-prefixes.cjs
 mise exec -- node tests/folder-actions.cjs
 mise exec -- bash scripts/build.sh 2026.10.09.1
 ```

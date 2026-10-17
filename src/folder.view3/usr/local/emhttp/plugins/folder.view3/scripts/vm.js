@@ -125,10 +125,11 @@ const createFolder = (folder, id, position, order, vmInfo, foldersDone) => {
     let autostartStarted = 0;
     let remBefore = 0;
 
+    folder.containers = folderContainerNames(folder, order.filter(el => vmInfo[el]));
     // If regex is present searches all containers for a match and put them inside the folder containers
     if (folder.regex) {
         const regex = new RegExp(folder.regex);
-        folder.containers = folder.containers.concat(order.filter(el => regex.test(el)));
+        folder.containers = folder.containers.concat(order.filter(el => !folderPrefixFor(el, folder.prefixes) && regex.test(el) && !folder.containers.includes(el)));
     }
 
     // the HTML template for the folder

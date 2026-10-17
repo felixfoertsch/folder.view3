@@ -27,6 +27,7 @@ jobs:
         run: |
           mise exec -- node tests/docker-load.cjs
           mise exec -- node tests/folder-editor.cjs
+          mise exec -- node tests/folder-prefixes.cjs
           mise exec -- node tests/folder-actions.cjs
           mise exec -- node tests/folder-export.cjs
           mise exec -- node tests/folder-preview.cjs

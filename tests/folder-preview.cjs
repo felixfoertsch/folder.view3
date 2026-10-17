@@ -18,6 +18,11 @@ const rows = [
 assert.deepEqual(Array.from(context.names({ querySelectorAll: () => rows })), rows.slice(0, 4).map(row => row.value));
 rows.reverse();
 assert.equal(context.names({ querySelectorAll: () => rows })[0], 'regex-or-label-match');
+assert.deepEqual(Array.from(context.names({ querySelectorAll: () => [
+	{ value: 'coder*', checked: true, dataset: { prefixBucket: 'true' } },
+	{ value: 'coder', checked: true, disabled: true, dataset: { prefixMember: 'coder*' } },
+	{ value: 'gitea', checked: false, disabled: true, dataset: { prefixMember: 'gitea*' } },
+] })), ['coder'], 'Preview includes only enabled bucket members, never wildcard entries');
 vm.runInContext(fs.readFileSync(root + 'scripts/include/escapeHtml.js', 'utf8') + '\n' + fs.readFileSync(root + 'scripts/include/folderRow.js', 'utf8') + '\nglobalThis.row = folderRowHtml;', context);
 for (const type of ['docker', 'vm']) {
 	const html = context.row(type, { name: '<unsafe>', icon: '"bad', settings: { preview_hover: true } }, 'preview');

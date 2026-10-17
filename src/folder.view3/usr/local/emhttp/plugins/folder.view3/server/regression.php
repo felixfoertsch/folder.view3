@@ -47,7 +47,14 @@ try {
     validateFolder($folder);
     $bad = $folder; $bad['settings']['preview_vertical_bars_color'] = 'red;display:none';
     refuses(function () use ($bad) { validateFolder($bad); });
+    foreach ([null, 'coder*', ['*'], ['coder'], ['co*der*'], ['coder**'], [' coder*'], ['x' . "\n" . '*'], ['coder*', 'coder*'], [1], ['' => 'coder*']] as $prefixes) {
+        $bad = $folder; $bad['prefixes'] = $prefixes;
+        refuses(function () use ($bad) { validateFolder($bad); });
+    }
+    $folder['prefixes'] = ['coder*', 'gitea-disposable-*'];
+    $folder['containers'] = ['test', 'coder*'];
     updateFolder('docker', json_encode($folder), 'Test');
+    check(json_decode(readFolder('docker'), true)['Test'] === $folder, 'Prefix round trip');
     deleteFolder('docker', 'Test');
     check(readFolder('docker') === '{}', 'Empty object after delete');
     foreach (['{broken', '[]', 'null'] as $corrupt) {

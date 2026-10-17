@@ -233,14 +233,14 @@ const createFolder = (folder, id, positionInMainOrder, liveOrderArray, container
 
     // --- Correctly build combinedContainers ---
     const originalContainersFromDefinition = Array.isArray(folder.containers) ? [...folder.containers] : [];
-    let combinedContainers = [...originalContainersFromDefinition];
+    let combinedContainers = folderContainerNames(folder, orderSnapshotAtFolderStart.filter(el => containersInfo[el]));
     if (FOLDER_VIEW_DEBUG_MODE) console.log(`[FV2_DEBUG] createFolder (id: ${id}): Initial containers from definition for combinedContainers:`, [...originalContainersFromDefinition]);
 
     if (folder.regex && typeof folder.regex === 'string' && folder.regex.trim() !== "") {
         if (FOLDER_VIEW_DEBUG_MODE) console.log(`[FV2_DEBUG] createFolder (id: ${id}): Regex defined: '${folder.regex}'. Filtering orderSnapshotAtFolderStart.`);
         try {
             const re = new RegExp(folder.regex);
-            const regexMatches = orderSnapshotAtFolderStart.filter(el => containersInfo[el] && re.test(el) && !combinedContainers.includes(el));
+            const regexMatches = orderSnapshotAtFolderStart.filter(el => containersInfo[el] && !folderPrefixFor(el, folder.prefixes) && re.test(el) && !combinedContainers.includes(el));
             regexMatches.forEach(match => combinedContainers.push(match));
             if (FOLDER_VIEW_DEBUG_MODE) console.log(`[FV2_DEBUG] createFolder (id: ${id}): Regex matches added:`, regexMatches, "Combined containers after regex:", [...combinedContainers]);
         } catch (e) {
@@ -250,7 +250,7 @@ const createFolder = (folder, id, positionInMainOrder, liveOrderArray, container
         if (FOLDER_VIEW_DEBUG_MODE && folder.regex) console.log(`[FV2_DEBUG] createFolder (id: ${id}): Regex is present but empty or invalid, skipping regex matching.`);
     }
 
-    const labelMatches = orderSnapshotAtFolderStart.filter(el => (containersInfo[el]?.Labels?.['folder.view3'] ?? containersInfo[el]?.Labels?.['folder.view2']) === folder.name && !combinedContainers.includes(el));
+    const labelMatches = orderSnapshotAtFolderStart.filter(el => !folderPrefixFor(el, folder.prefixes) && (containersInfo[el]?.Labels?.['folder.view3'] ?? containersInfo[el]?.Labels?.['folder.view2']) === folder.name && !combinedContainers.includes(el));
     labelMatches.forEach(match => combinedContainers.push(match));
 
     if (FOLDER_VIEW_DEBUG_MODE) {

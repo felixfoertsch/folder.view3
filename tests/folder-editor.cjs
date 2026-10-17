@@ -9,11 +9,12 @@ let redraws = 0;
 let rows = [];
 const context = {
 	choose: [{ Name: 'label', Label: 'group' }, { Name: 'other' }],
-	selected: [{ Name: 'manual' }], selectedRegex: [],
+	selected: [{ Name: 'manual' }], selectedRegex: [], prefixes: [], prefixMembers: [],
 	document: { querySelectorAll: () => rows },
 	$: () => [{ value: 'group' }], updateList: () => redraws++,
 };
 vm.createContext(context);
+vm.runInContext(fs.readFileSync(root + 'scripts/include/folderMembership.js', 'utf8'), context);
 vm.runInContext(source.slice(start, end) + '\nglobalThis.updateRegex = updateRegex;', context);
 const input = { value: '[', setCustomValidity(value) { this.error = value; }, reportValidity() {} };
 context.updateRegex(input);
@@ -34,7 +35,7 @@ assert.equal(context.choose.length, 0);
 assert.ok(source.includes(".off('.folderOrder')"));
 const sortStart = source.indexOf('const sortTable =');
 const sortEnd = source.indexOf('\n/**', sortStart);
-const dragging = {};
+const dragging = { classList: { contains: () => false } };
 let inserted;
 const table = {
 	querySelector: selector => selector === '.dragging' ? dragging : { insertBefore: (item, near) => { inserted = [item, near]; } },
@@ -43,4 +44,15 @@ const table = {
 vm.runInContext(source.slice(sortStart, sortEnd) + '\nglobalThis.sortTable = sortTable;', context);
 context.sortTable({ preventDefault() {}, delegateTarget: table, clientY: 20 });
 assert.deepEqual(inserted, [dragging, null]);
+const member = { classList: { contains: name => name === 'prefix-member' } };
+const bucket = { classList: { contains: name => name === 'prefix-bucket' }, nextElementSibling: member };
+const other = { classList: { contains: () => false }, getBoundingClientRect: () => ({ top: 100, height: 10 }) };
+member.nextElementSibling = other;
+let order = [other, bucket, member];
+const body = { insertBefore(item, near) { order = order.filter(row => row !== item); order.splice(near ? order.indexOf(near) : order.length, 0, item); } };
+const groupedTable = { querySelector: selector => selector === '.dragging' ? bucket : body, querySelectorAll: () => [other] };
+context.sortTable({ preventDefault() {}, delegateTarget: groupedTable, clientY: 0 });
+assert.deepEqual(order, [bucket, member, other], 'Drag moves bucket with all its members');
+context.sortTable({ preventDefault() {}, delegateTarget: groupedTable, clientY: 200 });
+assert.deepEqual(order, [other, bucket, member], 'Bucket can move to end without losing members');
 console.log('Folder editor regression checks passed');

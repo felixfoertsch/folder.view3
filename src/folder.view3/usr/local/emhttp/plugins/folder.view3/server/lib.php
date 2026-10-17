@@ -93,6 +93,17 @@
             if (!is_string($name) || preg_match('/[\x22\x27`\\\\]/', $name)) throw new InvalidArgumentException('Invalid container name');
         }
         if (isset($folder['regex']) && !is_string($folder['regex'])) throw new InvalidArgumentException('Invalid folder regex');
+        if (array_key_exists('prefixes', $folder)) {
+            if (!is_array($folder['prefixes']) || !array_is_list($folder['prefixes'])) throw new InvalidArgumentException('Invalid folder prefixes');
+            $seen = [];
+            foreach ($folder['prefixes'] as $prefix) {
+                if (!is_string($prefix) || strlen($prefix) > 256 || $prefix !== trim($prefix) ||
+                    !preg_match('/^[^*\x00-\x1f\x7f<>\x22\x27`\\\\]+\*$/D', $prefix) || trim(substr($prefix, 0, -1)) === '' || isset($seen[$prefix])) {
+                    throw new InvalidArgumentException('Invalid folder prefix');
+                }
+                $seen[$prefix] = true;
+            }
+        }
         foreach ($folder['settings'] as $key => $value) {
             if (in_array($key, ['preview', 'context', 'context_trigger', 'context_graph', 'context_graph_time'], true)) {
                 if (!is_int($value) || $value < 0 || $value > ($key === 'context_graph_time' ? 86400 : 4)) throw new InvalidArgumentException('Invalid folder setting');

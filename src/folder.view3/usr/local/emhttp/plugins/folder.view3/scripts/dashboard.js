@@ -245,13 +245,14 @@ const createFolderDocker = (folder, id, position, order, containersInfo, folders
     let managed = 0;
     let remBefore = 0;
 
+    folder.containers = folderContainerNames(folder, order.filter(el => containersInfo[el]));
     // If regex is present searches all containers for a match and put them inside the folder containers
     if (folder.regex) {
         const regex = new RegExp(folder.regex);
-        folder.containers = folder.containers.concat(order.filter(el => regex.test(el)));
+        folder.containers = folder.containers.concat(order.filter(el => !folderPrefixFor(el, folder.prefixes) && regex.test(el) && !folder.containers.includes(el)));
     }
 
-    folder.containers = folder.containers.concat(order.filter(el => (containersInfo[el]?.Labels?.['folder.view3'] ?? containersInfo[el]?.Labels?.['folder.view2']) === folder.name));
+    folder.containers = folder.containers.concat(order.filter(el => !folderPrefixFor(el, folder.prefixes) && (containersInfo[el]?.Labels?.['folder.view3'] ?? containersInfo[el]?.Labels?.['folder.view2']) === folder.name && !folder.containers.includes(el)));
 
     // the HTML template for the folder
     const fld = `<div class="folder-showcase-outer-${id} folder-showcase-outer"><span class="outer solid apps stopped folder-docker"><span id="folder-id-${id}" onclick='addDockerFolderContext("${id}")' class="hand docker folder-hand-docker">${folderIconHtml(folder.icon, 'folder-img-docker')}</span><span class="inner folder-inner-docker"><span class="folder-appname-docker">${folderHtml(folder.name)}</span><br><i class="fa fa-square stopped red-text folder-load-status-docker"></i><span class="state folder-state-docker">${$.i18n('stopped')}</span></span><div class="folder-storage"></div></span><div class="folder-showcase-${id} folder-showcase"></div></div>`;
@@ -435,10 +436,11 @@ const createFolderVM = (folder, id, position, order, vmInfo, foldersDone) => {
     let autostartStarted = 0;
     let remBefore = 0;
 
+    folder.containers = folderContainerNames(folder, order.filter(el => vmInfo[el]));
     // If regex is present searches all containers for a match and put them inside the folder containers
     if (folder.regex) {
         const regex = new RegExp(folder.regex);
-        folder.containers = folder.containers.concat(order.filter(el => regex.test(el)));
+        folder.containers = folder.containers.concat(order.filter(el => !folderPrefixFor(el, folder.prefixes) && regex.test(el) && !folder.containers.includes(el)));
     }
 
     // the HTML template for the folder

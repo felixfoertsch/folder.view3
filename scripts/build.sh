@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(values)) {
 	if ([...plugin.matchAll(pattern)].length !== 1) throw new Error(`Expected one ${key} entity`);
 	plugin = plugin.replace(pattern, `<!ENTITY ${key} "${value}">`);
 }
-plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Keep icon picker tiles icon-only, remove theme-added button glyphs.\n- Match preset icon width and spacing to native question-mark icons for aligned folder names.`);
+plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Add prefix buckets to folder ordering, automatically include matching current and future items.\n- Show matching members, move buckets with drag and drop, toggle inclusion, remove prefix rules without deleting containers.`);
 fs.writeFileSync(output, plugin);
 NODE
 	printf 'Built %s\n' "$output"

@@ -4,6 +4,8 @@ let choose = [];
 let selectedRegex = [];
 // element selected manually
 let selected = [];
+let prefixes = [];
+let prefixMembers = [];
 // docker or vm?
 const type = new URLSearchParams(location.search).get('type');
 //id of the folder if present
@@ -99,6 +101,8 @@ $('div.canvas > form')[0].preview_vertical_bars_color.value = rgbToHex($('body')
         form.override_default_actions.checked = currFolder.settings.override_default_actions;
         form.expand_dashboard.checked = currFolder.settings.expand_dashboard;
         form.regex.value = currFolder.regex;
+        prefixes = currFolder.prefixes || [];
+        choose.push(...prefixes.map(Name => ({ Name, Prefix: true })));
         for (const ct of currFolder.containers) {
             const index = choose.findIndex((e) => e.Name === ct);
             if (index > -1) {
@@ -113,7 +117,6 @@ $('div.canvas > form')[0].preview_vertical_bars_color.value = rgbToHex($('body')
 
         // make the ui respond to the previus changes
         updateForm();
-        updateRegex(form.regex);
         updateIcon(form.icon);
     }
 
@@ -122,18 +125,15 @@ $('div.canvas > form')[0].preview_vertical_bars_color.value = rgbToHex($('body')
 
     // iterate over the folders
     for (const [folderId, value] of Object.entries(folders)) {
-        // match the element to the regex
-        if (value.regex) {
-            const regex = new RegExp(value.regex);
-            for (const container of choose) {
-                if (regex.test(container.Name)) {
-                    value.containers.push(container.Name);
-                }
-            }
+        const members = folderContainerNames(value, choose.filter(el => !el.Prefix).map(el => el.Name));
+        const regex = value.regex ? new RegExp(value.regex) : null;
+        for (const container of choose) {
+            if (!container.Prefix && !folderPrefixFor(container.Name, value.prefixes) &&
+                ((regex && regex.test(container.Name)) || container.Label === value.name)) members.push(container.Name);
         }
 
         // remove the containers from the order
-        for (const container of value.containers) {
+        for (const container of members) {
             const index = choose.findIndex((e) => e.Name === container);
             if (index > -1) {
                 choose.splice(index, 1);
@@ -141,7 +141,7 @@ $('div.canvas > form')[0].preview_vertical_bars_color.value = rgbToHex($('body')
         }
     }
 
-    updateList();
+    updateRegex(document.querySelector('form.folder-editor').elements.regex);
     const iconInput = document.querySelector('form.folder-editor').elements.icon;
     if (!folderId) iconInput.value = 'fa:folder';
     updateIcon(iconInput);
@@ -168,7 +168,7 @@ const updateIcon = (e) => {
  * Update the regex selection when editing the respective field
  * @param {*} e the element
  */
-const updateRegex = (e) => {
+const updateRegex = (e, preserveRows = true) => {
     let regex;
     try {
         regex = e.value ? new RegExp(e.value) : null;
@@ -176,22 +176,23 @@ const updateRegex = (e) => {
     } catch (error) {
         e.setCustomValidity('Invalid regular expression');
         e.reportValidity();
-        return;
+        return false;
     }
     // Keep current manual choices and drag order when redrawing.
     const rows = [...document.querySelectorAll('.sortable input[name="containers[]"]:not(:disabled)')];
-    if (rows.length) {
+    if (preserveRows && rows.length) {
         const elements = new Map([...choose, ...selected].map(el => [el.Name, el]));
         selected = rows.filter(input => input.checked).map(input => elements.get(input.value)).filter(Boolean);
         choose = rows.filter(input => !input.checked).map(input => elements.get(input.value)).filter(Boolean);
     }
-    choose = choose.concat(selectedRegex);
+    choose = choose.concat(selectedRegex, prefixMembers);
+    prefixMembers = [];
     const fldName = $('[name="name"]')[0].value;
-    selectedRegex = choose.filter(el => el.Label === fldName);
-    choose = choose.filter(el => el.Label !== fldName);
+    selectedRegex = choose.filter(el => !el.Prefix && !folderPrefixFor(el.Name, prefixes) && el.Label === fldName);
+    choose = choose.filter(el => !selectedRegex.includes(el));
     if (regex) {
         for (let i = 0; i < choose.length; i++) {
-            if (regex.test(choose[i].Name)) {
+            if (!choose[i].Prefix && !folderPrefixFor(choose[i].Name, prefixes) && regex.test(choose[i].Name)) {
                 const tmpSel = choose.splice(i, 1)[0];
                 if(!selectedRegex.includes(tmpSel)) {
                     selectedRegex.push(tmpSel);
@@ -201,6 +202,29 @@ const updateRegex = (e) => {
         }
     }
     updateList();
+    return true;
+};
+
+const addPrefix = () => {
+    const input = document.getElementById('folder-prefix');
+    const pattern = input.value.trim();
+    const error = !folderPrefixValid(pattern) ? $.i18n('prefix-invalid') : prefixes.includes(pattern) ? $.i18n('prefix-duplicate') : '';
+    input.setCustomValidity(error);
+    if (error) { input.reportValidity(); return; }
+    if (!updateRegex(document.querySelector('form.folder-editor').elements.regex)) return;
+    prefixes.push(pattern);
+    selected.push({ Name: pattern, Prefix: true });
+    input.value = '';
+    updateRegex(document.querySelector('form.folder-editor').elements.regex, false);
+};
+
+const removePrefix = pattern => {
+    const regex = document.querySelector('form.folder-editor').elements.regex;
+    if (!updateRegex(regex)) return;
+    prefixes = prefixes.filter(prefix => prefix !== pattern);
+    selected = selected.filter(el => el.Name !== pattern);
+    choose = choose.filter(el => el.Name !== pattern);
+    updateRegex(regex, false);
 };
 
 /**
@@ -236,19 +260,34 @@ const updateForm = () => {
  * Create the element select table
  */
 const updateList = () => {
+    const items = [...new Map([...selected, ...choose, ...selectedRegex, ...prefixMembers].map(el => [el.Name, el])).values()];
+    prefixMembers = items.filter(el => !el.Prefix && folderPrefixFor(el.Name, prefixes));
+    selected = selected.filter(el => !prefixMembers.includes(el));
+    choose = choose.filter(el => !prefixMembers.includes(el));
+    selectedRegex = selectedRegex.filter(el => !prefixMembers.includes(el));
     // select the table
     const table = $('.sortable > tbody');
     // empty the table
     table.empty();
 
-    // append the selected elements
-    for (const el of selected) {
-        table.append($(`<tr class="item" draggable="true"><td><span style="cursor: pointer;" onclick="setIconAsContainer(this)"><img src="${folderHtml(el.Icon)}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span>${folderHtml(el.Name)}</td><td><input class="container-switch" checked type="checkbox" name="containers[]" value="${folderHtml(el.Name)}" style="display: none;"></td></tr>`));
-    }
-
-    // append the rest of the elements
-    for (const el of choose) {
-        table.append($(`<tr class="item" draggable="true"><td><span style="cursor: pointer;" onclick="setIconAsContainer(this)"><img src="${folderHtml(el.Icon)}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span>${folderHtml(el.Name)}</td><td><input class="container-switch" type="checkbox" name="containers[]" value="${folderHtml(el.Name)}" style="display: none;"></td></tr>`));
+    for (const el of [...selected, ...choose]) {
+        const checked = selected.includes(el);
+        if (el.Prefix) {
+            const members = prefixMembers.filter(item => folderPrefixFor(item.Name, prefixes) === el.Name);
+            const row = $(`<tr class="item prefix-bucket" draggable="true"><td>${folderHtml(el.Name)} <small>(${members.length})</small></td><td><button type="button" class="prefix-delete" aria-label="${folderHtml($.i18n('prefix-delete', el.Name))}"><i class="fa fa-trash" aria-hidden="true"></i></button><input class="prefix-switch" role="switch" ${checked ? 'checked' : ''} data-prefix-bucket="true" type="checkbox" name="containers[]" value="${folderHtml(el.Name)}" aria-label="${folderHtml($.i18n('prefix-include', el.Name))}"></td></tr>`);
+            row.find('.prefix-delete').on('click', () => removePrefix(el.Name));
+            row.find('input').on('change', function() {
+                const inputs = [...document.querySelectorAll('input[data-prefix-member]')].filter(input => input.dataset.prefixMember === el.Name);
+                for (const input of inputs) input.checked = this.checked;
+                updateFolderPreview();
+            });
+            table.append(row);
+            for (const member of members) {
+                table.append($(`<tr class="prefix-member"><td><span onclick="setIconAsContainer(this)"><img src="${folderHtml(member.Icon)}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span>${folderHtml(member.Name)}</td><td><input hidden disabled ${checked ? 'checked' : ''} data-prefix-member="${folderHtml(el.Name)}" type="checkbox" name="containers[]" value="${folderHtml(member.Name)}"></td></tr>`));
+            }
+        } else {
+            table.append($(`<tr class="item" draggable="true"><td><span style="cursor: pointer;" onclick="setIconAsContainer(this)"><img src="${folderHtml(el.Icon)}" class="img" onerror="this.src='/plugins/dynamix.docker.manager/images/question.png';"></span>${folderHtml(el.Name)}</td><td><input class="container-switch" ${checked ? 'checked' : ''} type="checkbox" name="containers[]" value="${folderHtml(el.Name)}" style="display: none;"></td></tr>`));
+        }
     }
 
     // prepend the selected regex element
@@ -283,7 +322,15 @@ const sortTable = (e) => {
         const bounds = el.getBoundingClientRect();
         return e.clientY <= bounds.top + bounds.height / 2;
     });
-    table.querySelector('tbody').insertBefore(dragging, near || null);
+    const group = [dragging];
+    if (dragging.classList.contains('prefix-bucket')) {
+        let row = dragging.nextElementSibling;
+        while (row?.classList.contains('prefix-member')) {
+            group.push(row);
+            row = row.nextElementSibling;
+        }
+    }
+    for (const row of group) table.querySelector('tbody').insertBefore(row, near || null);
 }
 
 /**
@@ -321,7 +368,8 @@ const submitForm = async (e) => {
             expand_dashboard: e.expand_dashboard.checked,
         },
         regex: e.regex.value.toString(),
-        containers: [...$('input[name*="containers"]:checked').map((i, e) => $(e).val())],
+        prefixes,
+        containers: [...$('.sortable input[name="containers[]"]:checked:not([data-prefix-member])').map((i, e) => $(e).val())],
         actions
     }
     // send the data to the right endpoint
@@ -380,7 +428,7 @@ const customAction = (action = undefined) => {
     }
     const selectCt = $('.action-subject [name="action_elements"]');
     selectCt.children().remove();
-    [...$('input[name*="containers"]:checked').map((i, e) => $(e).val()), ...selectedRegex.map(e => e.Name)].forEach((e) => {
+    folderPreviewNames(document.querySelector('form.folder-editor')).forEach((e) => {
         if(config.conatiners?.includes(e)) {
             selectCt.append(`<option value="${folderHtml(e)}" selected>${folderHtml(e)}</option>`);
         } else {

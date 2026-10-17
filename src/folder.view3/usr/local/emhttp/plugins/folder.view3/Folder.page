@@ -13,6 +13,7 @@ Markdown="false"
 <? require_once('/usr/local/emhttp/plugins/folder.view3/langs/script.php') ?>
 <script src="<?autov('/plugins/folder.view3/scripts/include/escapeHtml.js')?>"></script>
 <script src="<?autov('/plugins/folder.view3/scripts/include/folderRow.js')?>"></script>
+<script src="<?autov('/plugins/folder.view3/scripts/include/folderMembership.js')?>"></script>
 <script src="<?autov('/webGui/javascript/jquery.switchbutton.js')?>"></script>
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.switchbutton.css')?>">
 <link type="text/css" rel="stylesheet" href="<?autov('/webGui/styles/jquery.ui.css')?>">
@@ -487,6 +488,12 @@ Markdown="false"
                 </dd>
             </dl>
         </div>
+        <div class="folder-prefix-controls">
+            <label for="folder-prefix" data-i18n="prefix-label">Prefix</label>
+            <input id="folder-prefix" type="text" placeholder="coder*" aria-describedby="folder-prefix-help" oninput="this.setCustomValidity('')" onkeydown="if (event.key === 'Enter') { event.preventDefault(); addPrefix(); }">
+            <button type="button" onclick="addPrefix()" data-i18n="prefix-add">Add prefix</button>
+        </div>
+        <p id="folder-prefix-help" data-i18n="prefix-help">End with *. Matching names appear together and future matches join automatically. First added prefix owns overlapping matches. Removing a prefix returns its items to the list.</p>
         </fieldset>
         </section>
         <div class="folder-form-actions">

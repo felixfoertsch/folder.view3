@@ -1,7 +1,7 @@
 // Read native rows once; never execute their scripts or container/VM actions.
 let folderPreviewRows = new Map();
 const folderPreviewNames = form => [...form.querySelectorAll('.sortable input[name="containers[]"]')]
-	.filter(input => input.checked || input.disabled).map(input => input.value);
+	.filter(input => !input.dataset?.prefixBucket && (input.dataset?.prefixMember ? input.checked : input.checked || input.disabled)).map(input => input.value);
 const folderPreviewSafeClone = source => {
 	const clone = source.cloneNode(true);
 	for (const el of [clone, ...clone.querySelectorAll('*')]) {
@@ -35,7 +35,7 @@ const updateFolderPreview = () => {
 	if (settings.preview_border) preview.style.border = `1px solid ${settings.preview_border_color}`;
 	let started = 0;
 	let upToDate = true;
-	const metadata = new Map([...choose, ...selected, ...selectedRegex].map(item => [item.Name, item]));
+	const metadata = new Map([...choose, ...selected, ...selectedRegex, ...prefixMembers].map(item => [item.Name, item]));
 	for (const name of names) {
 		const source = folderPreviewRows.get(name);
 		if (!source) continue;
