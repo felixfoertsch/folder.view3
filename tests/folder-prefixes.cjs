@@ -75,6 +75,8 @@ assert.ok(editor.includes("$('table.sortable input.container-switch').switchButt
 const css = fs.readFileSync(root + 'styles/folder.css', 'utf8');
 assert.ok(css.includes('.prefix-bucket-controls .switch-button-background.checked { background-color: #ff8c2f; }'));
 assert.ok(!css.includes('.prefix-switch::before'), 'Prefix uses native switch shape, not custom imitation');
+assert.match(css, /\.folder-editor \.prefix-delete \{ position: absolute; right: 100%; top: 50%; transform: translateY\(-50%\);/, 'Bin stays left of switch without adding horizontal or vertical layout space');
+assert.match(css, /\.prefix-bucket-controls \{ position: relative; display: flex; align-items: center; \}/, 'Prefix track keeps native margin from Included cell edge');
 let rendered = [];
 let rows = [];
 const regex = { value: '', setCustomValidity() {}, reportValidity() {} };

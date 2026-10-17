@@ -39,9 +39,10 @@
 .folder-prefix-controls { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
 .folder-prefix-controls input { flex: 1; min-width: 6rem; }
 .folder-prefix-controls button { margin: 0; }
-.folder-editor .prefix-delete { padding: .25rem; min-width: 0; margin: 0 .5rem 0 0; color: inherit; background: transparent; }
+.folder-editor .prefix-bucket > td:first-child { padding-right: 2rem; }
+.folder-editor .prefix-delete { position: absolute; right: 100%; top: 50%; transform: translateY(-50%); padding: .25rem; min-width: 0; margin: 0; color: inherit; background: transparent; }
 .folder-editor .prefix-delete:focus-visible { outline: 2px solid currentColor; }
-.prefix-bucket-controls { display: flex; align-items: center; }
+.prefix-bucket-controls { position: relative; display: flex; align-items: center; }
 .prefix-bucket-controls .switch-button-background.checked { background-color: #ff8c2f; }
 .prefix-bucket-controls .switch-button-background:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .folder-editor table.sortable td { overflow-wrap: anywhere; padding: .35rem .5rem; }

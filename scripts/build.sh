@@ -21,7 +21,7 @@ for (const [key, value] of Object.entries(values)) {
 	if ([...plugin.matchAll(pattern)].length !== 1) throw new Error(`Expected one ${key} entity`);
 	plugin = plugin.replace(pattern, `<!ENTITY ${key} "${value}">`);
 }
-plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Fix prefix grouping for Docker containers without template links.\n- Clarify prefix help, refresh cached translations, use native orange prefix switches.`);
+plugin = plugin.replace('<CHANGES>', `<CHANGES>\n\n###${version}\n- Align prefix switches with Included switches, keep delete buttons on their left.`);
 fs.writeFileSync(output, plugin);
 NODE
 	printf 'Built %s\n' "$output"
